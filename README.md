@@ -1,6 +1,6 @@
-# Django Celery Boilerplate
+# Docnet Backend
 
-A production-ready Django application boilerplate with Celery for asynchronous task processing, containerized with Docker for easy development and deployment.
+The Backend system for Docnet Telemedicine Platform.
 
 ![Image](https://github.com/user-attachments/assets/95c3bd7f-d1fe-4b98-9bfa-05ded12c76bb)
 
@@ -51,8 +51,8 @@ A production-ready Django application boilerplate with Celery for asynchronous t
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/django-celery-boilerplate.git
-cd django-celery-boilerplate
+git clone https://github.com/DOCNET-HQ/docnet_backend.git
+cd docnet_backend
 ```
 
 
@@ -98,7 +98,7 @@ docker-compose -f docker/docker-compose.yml logs -f
 
 ### 📁 Project Structure
 ```
-django-celery-boilerplate/
+docnet_backend/
 ├── app/                    # Django application code
 │   ├── manage.py
 │   ├── app/
@@ -183,9 +183,6 @@ Access `http://localhost:5555` using username: `admin`, password: `admin` to mon
 3. Commit your changes (git commit -m 'Add amazing feature')
 4. Push to the branch (git push origin feature/amazing-feature)
 5. Open a Pull Request
-
-#### 📝 License
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 # Author
 
