@@ -36,13 +36,9 @@ class UserManagerTests(TestCase):
         user = self.manager.create_user(
             email="test@example.com",
             password="testpass123",
-            first_name="John",
-            last_name="Doe",
             is_active=False,
         )
 
-        self.assertEqual(user.first_name, "John")
-        self.assertEqual(user.last_name, "Doe")
         self.assertFalse(user.is_active)
 
     def test_create_user_email_normalization(self):
@@ -140,8 +136,6 @@ class UserModelTests(TestCase):
         self.user_data = {
             "email": "test@example.com",
             "password": "testpass123",
-            "first_name": "John",
-            "last_name": "Doe",
         }
 
     def test_user_creation_basic(self):
@@ -150,8 +144,6 @@ class UserModelTests(TestCase):
 
         self.assertIsInstance(user.id, uuid.UUID)
         self.assertEqual(user.email, "test@example.com")
-        self.assertEqual(user.first_name, "John")
-        self.assertEqual(user.last_name, "Doe")
         self.assertTrue(user.is_active)
         self.assertFalse(user.is_staff)
         self.assertIsInstance(user.date_joined, datetime)
@@ -172,21 +164,6 @@ class UserModelTests(TestCase):
 
         self.assertEqual(str(user), "test@example.com")
 
-    def test_user_str_partial_names(self):
-        """Test string representation with only first or last name"""
-        # Only first name
-        user1 = User.objects.create_user(
-            email="test1@example.com", password="testpass123",
-            first_name="John"
-        )
-        self.assertEqual(str(user1), "test1@example.com")
-
-        # Only last name
-        user2 = User.objects.create_user(
-            email="test2@example.com", password="testpass123", last_name="Doe"
-        )
-        self.assertEqual(str(user2), "test2@example.com")
-
     def test_email_uniqueness(self):
         """Test that email field is unique"""
         User.objects.create_user(**self.user_data)
@@ -199,7 +176,7 @@ class UserModelTests(TestCase):
 
     def test_email_validation_on_save(self):
         """Test email validation during save"""
-        user = User(email="invalid-email", first_name="John")
+        user = User(email="invalid-email")
 
         with self.assertRaises(ValidationError):
             user.save()
@@ -286,7 +263,6 @@ class UserModelTests(TestCase):
 
         time.sleep(0.01)
 
-        user.first_name = "Updated"
         user.save()
 
         self.assertGreater(user.date_modified, original_modified)
@@ -338,18 +314,6 @@ class UserModelTests(TestCase):
         self.assertEqual(len(str(user.id)), 36)  # Standard UUID string length
         self.assertEqual(user.id.version, 4)  # Should be UUID4
 
-    def test_blank_name_fields(self):
-        """Test that name fields can be blank"""
-        user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            first_name="",
-            last_name="",
-        )
-
-        self.assertEqual(user.first_name, "")
-        self.assertEqual(user.last_name, "")
-
     def test_model_meta_configuration(self):
         """Test model Meta configuration"""
         meta = User._meta
@@ -360,27 +324,25 @@ class UserModelTests(TestCase):
         # Test that model is properly configured
         self.assertEqual(meta.get_field("email").unique, True)
         self.assertEqual(meta.get_field("email").max_length, 255)
-        self.assertEqual(meta.get_field("first_name").max_length, 30)
-        self.assertEqual(meta.get_field("last_name").max_length, 30)
 
 
 class UserModelSecurityTests(TestCase):
     """Security-focused tests for User model"""
 
-    def test_xss_protection_in_string_fields(self):
-        """Test XSS protection in string fields"""
-        xss_payload = '<script>alert("xss")</script>'
+    # def test_xss_protection_in_string_fields(self):
+    #     """Test XSS protection in string fields"""
+    #     xss_payload = '<script>alert("xss")</script>'
 
-        user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            first_name=xss_payload,
-            last_name='"><img src=x onerror=alert(1)>',
-        )
+    #     user = User.objects.create_user(
+    #         email="test@example.com",
+    #         password="testpass123",
+    #         first_name=xss_payload,
+    #         last_name='"><img src=x onerror=alert(1)>',
+    #     )
 
-        # Data should be stored as-is (escaping handled at template level)
-        self.assertEqual(user.first_name, xss_payload)
-        self.assertIn("onerror", user.last_name)
+    #     # Data should be stored as-is (escaping handled at template level)
+    #     self.assertEqual(user.first_name, xss_payload)
+    #     self.assertIn("onerror", user.last_name)
 
     def test_password_security(self):
         """Test password security features"""
@@ -422,7 +384,7 @@ class UserModelPerformanceTests(TestCase):
         users_data = [
             User(
                 email=f"user{i}@example.com",
-                first_name=f"User{i}", is_active=True
+                is_active=True
             ) for i in range(100)
         ]
 
