@@ -48,6 +48,14 @@ INSTALLED_APPS = [
     "core",
     "users",
     "utils",
+    "profiles",
+    "patients",
+    "doctors",
+    "hospitals",
+    "appointments",
+    "notifications",
+    "reviews",
+    "admins"
 ]
 
 MIDDLEWARE = [
