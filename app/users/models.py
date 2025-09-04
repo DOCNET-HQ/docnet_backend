@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from users.choices import USER_ROLES
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -51,8 +52,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         max_length=255, unique=True, validators=[validate_email]
     )
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
+
+    role = models.CharField(
+        max_length=50, choices=USER_ROLES, default='patient'
+    )
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -72,19 +75,25 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         super(User, self).save(*args, **kwargs)
 
+    @property
+    def profile(self):
+        profile_attr = f"{self.role}_profile"
+        return getattr(self, profile_attr, None)
+
+    @property
+    def name(self):
+        return self.get_name()
+
+    def get_name(self):
+        """Return the user's name"""
+        if self.profile:
+            return self.profile.name
+        else:
+            return self.email
+
     def __str__(self):
         """String representation of a user"""
-        if self.first_name and self.last_name:
-            return f"{self.first_name} {self.last_name} ({self.email})"
-        return self.email
-
-    def get_full_name(self):
-        """Return the user's full name"""
-        return f"{self.first_name} {self.last_name}".strip()
-
-    def get_short_name(self):
-        """Return the user's short name"""
-        return self.first_name or self.last_name or self.email.split('@')[0]
+        return f"{self.email} ({self.role})"
 
     class Meta:
         ordering = ("-date_joined",)
