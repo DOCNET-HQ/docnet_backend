@@ -102,8 +102,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
 
         data["email"] = self.user.email
-        data["first_name"] = self.user.first_name or ""
-        data["last_name"] = self.user.last_name or ""
+        data["name"] = self.user.name or ""
         data["user_id"] = self.user.id
 
         return data
