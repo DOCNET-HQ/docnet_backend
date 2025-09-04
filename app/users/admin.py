@@ -7,9 +7,9 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     list_display = [
-        "email", "first_name", "last_name", "is_staff", "is_active"
+        "email", "role", "is_staff", "is_active"
     ]
-    search_fields = ["email", "first_name", "last_name"]
+    search_fields = ["email", "role"]
     readonly_fields = ["last_login", "date_joined", "date_modified"]
     ordering = ("-date_joined",)
 
@@ -19,8 +19,7 @@ class UserAdmin(BaseUserAdmin):
             {
                 "fields": (
                     "email",
-                    "first_name",
-                    "last_name",
+                    "role",
                     "password",
                 )
             },
@@ -54,8 +53,7 @@ class UserAdmin(BaseUserAdmin):
                 "classes": ("wide",),
                 "fields": (
                     "email",
-                    "first_name",
-                    "last_name",
+                    "role",
                     "is_active",
                     "is_staff",
                     "password1",
