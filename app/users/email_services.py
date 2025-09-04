@@ -10,7 +10,7 @@ from users.tasks import send_email_task
 
 
 def generate_email_message(user):
-    name = user.first_name or user.last_name or user.email.split("@")[0]
+    name = user.name or user.email.split("@")[0]
     return f"""
 Hi {name},
 
@@ -37,7 +37,7 @@ class EmailService:
     def send_account_verification_email(self, request, user):
         current_site = get_current_site(request)
         subject = "Verify Your Email"
-        name = user.first_name or user.last_name or user.email.split('@')[0]
+        name = user.name or user.email.split('@')[0]
 
         body = render_to_string(
             "mail/email_confirmation.html",
@@ -59,7 +59,7 @@ class EmailService:
     def send_password_reset_link(self, request, user):
         current_site = get_current_site(request)
         subject = "Password Reset Request - Platform"
-        name = user.first_name or user.last_name or user.email.split('@')[0]
+        name = user.name or user.email.split('@')[0]
 
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
@@ -99,7 +99,7 @@ This link will expire in 24 hours.
 
     def send_password_reset_confirmation(self, user):
         subject = "Password Reset Successful - Platform"
-        name = user.first_name or user.last_name or user.email.split('@')[0]
+        name = user.name or user.email.split('@')[0]
 
         try:
             body = render_to_string(
