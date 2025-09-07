@@ -1,4 +1,5 @@
 import logging
+from decouple import config
 from users.tokens import generate_token
 from users.serializers import (
     UserSerializer,
@@ -95,8 +96,16 @@ class ActivateAccountAPIView(APIView):
         if myuser is not None and generate_token.check_token(myuser, token):
             myuser.is_active = True
             myuser.save()
-            # Change to frontend signin url
-            return redirect("http://localhost:5173/login/")
+
+            if myuser.role == "patient":
+                return redirect(f'{config("PATIENT_DASHBOARD_URL")}/login/')
+
+            elif myuser.role == "doctor":
+                return redirect(f'{config("DOCTOR_DASHBOARD_URL")}/login/')
+
+            elif myuser.role == "hospital":
+                return redirect(f'{config("HOSPITAL_DASHBOARD_URL")}/login/')
+
         else:
             # Change to a frontend page that says activation link is invalid
             # And provide a link to resend the activation link to their email
@@ -190,7 +199,6 @@ class PasswordResetView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        # print(serializer)
         serializer.is_valid(raise_exception=True)
 
         # Get user by email
