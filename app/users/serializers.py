@@ -133,7 +133,6 @@ class UserSerializer(serializers.ModelSerializer):
                 setattr(user.profile, key, value)
             user.profile.save()
 
-
         return user
 
 
@@ -168,7 +167,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if not user_.is_active:
             raise ValidationError(
                 {
-                    "email": "Your account is not activated. You need to verify your email.",
+                    "email": "You need to verify your email.",
                     "code": "account_not_activated"
                 },
             )
@@ -193,10 +192,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if self.user.role != input_role:
             raise ValidationError(
                 {
-                    "role": f"{self.user.role} cannot login on the {input_role} portal."
+                    "role": f"{self.user.role} cannot login on the {input_role} portal." # noqa
                 }
             )
-
 
         if self.user.role == 'admin' and not self.user.is_staff:
             raise ValidationError(
