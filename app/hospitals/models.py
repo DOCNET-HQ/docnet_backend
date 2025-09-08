@@ -48,7 +48,6 @@ class Hospital(Profile):
         validators=[validate_id_file]
     )
 
-
     def save(self, *args, **kwargs):
         if not self._state.adding:
             original = Hospital.objects.get(pk=self.pk)
