@@ -435,7 +435,7 @@ class SecurityTests(APITestCase):
     #     )
 
     #     if response.status_code == 201:
-    #         # If user was created, confirm the malicious content was sanitized
+    #         # Confirm the malicious content was sanitized
     #         user = User.objects.get(email="test@test.com")
     #         self.assertNotIn("<script>", user.first_name)
 
