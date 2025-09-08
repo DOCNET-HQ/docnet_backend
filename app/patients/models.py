@@ -78,7 +78,9 @@ class PatientEmergencyContact(models.Model):
     def clean(self):
         # Count existing contacts for this patient
         if self.patient.emergency_contacts.count() >= 2 and not self.pk:
-            raise ValidationError("A patient cannot have more than 2 emergency contacts.")
+            raise ValidationError(
+                "A patient cannot have more than 2 emergency contacts."
+            )
 
     def save(self, *args, **kwargs):
         self.clean()
