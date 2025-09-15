@@ -356,8 +356,16 @@ CELERY_TASK_SOFT_TIME_LIMIT = 20 * 60  # 20 minutes
 
 # Dashboard URLs
 DASHBOARD_URLS = {
-    "hospital": config("HOSPITAL_DASHBOARD_URL"),
-    "doctor": config("DOCTOR_DASHBOARD_URL"),
-    "patient": config("PATIENT_DASHBOARD_URL"),
-    "admin": config("ADMIN_DASHBOARD_URL")
+    "hospital": config(
+        "HOSPITAL_DASHBOARD_URL", default="http://localhost:3000"
+    ),
+    "doctor": config(
+        "DOCTOR_DASHBOARD_URL", default="http://localhost:3001"
+    ),
+    "patient": config(
+        "PATIENT_DASHBOARD_URL", default="http://localhost:3002"
+    ),
+    "admin": config(
+        "ADMIN_DASHBOARD_URL", default="http://localhost:3003"
+    )
 }
