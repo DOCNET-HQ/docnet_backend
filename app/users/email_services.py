@@ -58,13 +58,19 @@ class EmailService:
 
     def send_password_reset_link(self, request, user):
         current_site = get_current_site(request)
-        subject = "Password Reset Request - Platform"
+        subject = "Password Reset Request - Docnet"
         name = user.name or user.email.split('@')[0]
 
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
         protocol = 'https' if request.is_secure() else 'http'
-        reset_link = f"{protocol}://{current_site.domain}/users/password-reset-confirm/{uidb64}/{token}/"
+        dashboard_url = settings.DASHBOARD_URLS.get(user.role, 'http://localhost:3000')
+
+        reset_link = ""
+        if dashboard_url:
+            reset_link = f"{dashboard_url}/auth/reset-password/{uidb64}/{token}/"
+        else:
+            reset_link = f"http://{current_site.domain}/users/password-reset-confirm/{uidb64}/{token}/"
 
         try:
             body = render_to_string(
