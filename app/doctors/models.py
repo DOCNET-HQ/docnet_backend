@@ -3,6 +3,7 @@ from utils.choices import GENDER
 from utils.file_uploads import (
     upload_doctors_license
 )
+from hospitals.models import Hospital
 from utils.validations import validate_id_file
 from profiles.models import Profile, KYCRecord
 from django.contrib.auth import get_user_model
@@ -15,6 +16,14 @@ class Doctor(Profile):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE,
         related_name='doctor_profile'
+    )
+
+    hospital = models.ForeignKey(
+        Hospital,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='doctors'
     )
 
     gender = models.CharField(
