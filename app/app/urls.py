@@ -29,9 +29,24 @@ urlpatterns = [
     path("", include("rest_framework.urls")),
 
     path("health/", health_check, name="health-check"),
-    path("users/", include(("users.urls", "users"), namespace="users")),
 
-    path("api/docs/schema/", SpectacularAPIView.as_view(), name="api-schema"),
+    # APP URLS
+    path(
+        "users/",
+        include(("users.urls", "users"), namespace="users")
+    ),
+    path(
+        "hospitals/",
+        include(("hospitals.urls", "hospitals"), namespace="hospitals")
+    ),
+    # path("doctors/", include(("doctors.urls", "doctors"), namespace="doctors")),
+
+    # API DOCCUMENTATION
+    path(
+        "api/docs/schema/",
+        SpectacularAPIView.as_view(),
+        name="api-schema"
+    ),
     path(
         "api/docs/swagger/",
         SpectacularSwaggerView.as_view(url_name="api-schema"),
