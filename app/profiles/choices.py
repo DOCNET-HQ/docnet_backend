@@ -1,6 +1,6 @@
 KYC_STATUS = (
     ("PENDING", "PENDING"),
-    ("APPROVED", "APPROVED"),
+    ("VERIFIED", "VERIFIED"),
     ("REJECTED", "REJECTED"),
     ("SUSPENDED", "SUSPENDED"),
 )
