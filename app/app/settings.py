@@ -197,9 +197,8 @@ REST_FRAMEWORK = {
 
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "APP API DOCS",
-    "DESCRIPTION": "API documentation for the APP",
-    "DESCRIPTION": "",
+    "TITLE": "DOCNET BACKEND API DOCS",
+    "DESCRIPTION": "API documentation for the DOCNET BACKEND",
     "VERSION": "0.0.1",
     "SERVE_INCLUDE_SCHEMA": True,
     # OTHER SETTINGS
@@ -353,3 +352,12 @@ CELERY_ENABLE_UTC = True
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 CELERY_TASK_SOFT_TIME_LIMIT = 20 * 60  # 20 minutes
+
+
+# Dashboard URLs
+DASHBOARD_URLS = {
+    "hospital": config("HOSPITAL_DASHBOARD_URL"),
+    "doctor": config("DOCTOR_DASHBOARD_URL"),
+    "patient": config("PATIENT_DASHBOARD_URL"),
+    "admin": config("ADMIN_DASHBOARD_URL")
+}
