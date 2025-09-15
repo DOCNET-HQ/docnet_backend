@@ -220,7 +220,7 @@ class PasswordResetView(APIView):
 
         return Response(
             {
-                "detail": "Password reset e-mail has been sent."
+                "detail": "If an account with that email exists, you will receive a password reset link shortly." # noqa
             },
             status=status.HTTP_200_OK
         )
