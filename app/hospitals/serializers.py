@@ -9,20 +9,20 @@ class HospitalSerializer(serializers.ModelSerializer):
     """
     Serializer for Hospital model with all fields
     """
-    user_email = serializers.EmailField(source='user.email', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
     user_username = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
         model = Hospital
         fields = [
-            'id', 'user', 'user_email', 'user_username', 'name', 'dob',
+            'id', 'user', 'email', 'user_username', 'name', 'dob',
             'phone_number', 'website', 'bio', 'photo', 'address', 'country',
             'state', 'city', 'postal_code', 'id_document', 'kyc_status',
             'is_active', 'registration_number', 'license_name',
             'license_issuance_authority', 'license_number', 'license_issue_date',
             'license_expiry_date', 'license_document', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user_email', 'user_username']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'email', 'user_username']
         extra_kwargs = {
             'user': {'write_only': True},
         }
@@ -95,13 +95,13 @@ class HospitalListSerializer(serializers.ModelSerializer):
     """
     Simplified serializer for listing hospitals
     """
-    user_email = serializers.EmailField(source='user.email', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
 
     class Meta:
         model = Hospital
         fields = [
             'id', 'name', 'phone_number', 'website', 'address', 'city',
-            'state', 'country', 'kyc_status', 'is_active', 'user_email',
+            'state', 'country', 'kyc_status', 'is_active', 'email',
             'registration_number', 'license_number', 'license_expiry_date',
             'created_at', 'updated_at'
         ]
