@@ -7,7 +7,7 @@ from .models import Hospital, HospitalKYCRecord
 class HospitalAdmin(admin.ModelAdmin):
     list_display = [
         'user', 'name', 'phone_number', 'registration_number',
-        'city', 'state', 'is_active', 'kyc_status',
+        'city', 'state', 'is_active', 'is_visible', 'kyc_status',
         'license_number', 'license_expiry_date'
     ]
     search_fields = [
@@ -66,6 +66,7 @@ class HospitalAdmin(admin.ModelAdmin):
                     'id_document',
                     'kyc_status',
                     'is_active',
+                    'is_visible',
                 )
             }
         ),
