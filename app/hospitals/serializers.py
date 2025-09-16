@@ -17,7 +17,7 @@ class HospitalSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'email', 'user_username', 'name', 'dob',
             'phone_number', 'website', 'bio', 'photo', 'address', 'country',
-            'state', 'city', 'postal_code', 'id_document', 'kyc_status',
+            'state', 'city', 'postal_code', 'id_document', 'kyc_status', 'is_visible',
             'is_active', 'registration_number', 'license_name',
             'license_issuance_authority', 'license_number', 'license_issue_date',
             'license_expiry_date', 'license_document', 'created_at', 'updated_at'
@@ -61,7 +61,7 @@ class HospitalCreateSerializer(serializers.ModelSerializer):
         model = Hospital
         fields = [
             'name', 'dob', 'phone_number', 'website', 'bio', 'photo',
-            'address', 'country', 'state', 'city', 'postal_code',
+            'address', 'country', 'state', 'city', 'postal_code', 'is_visible',
             'id_document', 'registration_number', 'license_name',
             'license_issuance_authority', 'license_number', 'license_issue_date',
             'license_expiry_date', 'license_document'
@@ -84,10 +84,10 @@ class HospitalUpdateSerializer(serializers.ModelSerializer):
         model = Hospital
         fields = [
             'name', 'dob', 'phone_number', 'website', 'bio', 'photo',
-            'address', 'country', 'state', 'city', 'postal_code',
+            'address', 'country', 'state', 'city', 'postal_code', 'is_visible',
             'id_document', 'registration_number', 'license_name',
             'license_issuance_authority', 'license_number', 'license_issue_date',
-            'license_expiry_date', 'license_document'
+            'license_expiry_date', 'license_document', 'is_visible'
         ]
 
 
@@ -101,7 +101,7 @@ class HospitalListSerializer(serializers.ModelSerializer):
         model = Hospital
         fields = [
             'id', 'name', 'phone_number', 'website', 'address', 'city',
-            'state', 'country', 'kyc_status', 'is_active', 'email',
+            'state', 'country', 'kyc_status', 'is_active', 'is_visible', 'email',
             'registration_number', 'license_number', 'license_expiry_date',
             'created_at', 'updated_at'
         ]
