@@ -89,6 +89,7 @@ class Profile(models.Model):
     )
 
     is_active = models.BooleanField(default=False)
+    is_visible = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
