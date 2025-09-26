@@ -39,10 +39,10 @@ urlpatterns = [
         "hospitals/",
         include(("hospitals.urls", "hospitals"), namespace="hospitals")
     ),
-    path(
-        "doctors/",
-        include(("doctors.urls", "doctors"), namespace="doctors")
-    ),
+    # path(
+    #     "doctors/",
+    #     include(("doctors.urls", "doctors"), namespace="doctors")
+    # ),
 
     # API DOCCUMENTATION
     path(
