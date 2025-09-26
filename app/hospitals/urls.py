@@ -36,6 +36,12 @@ urlpatterns = [
         name='my-hospital-profile'
     ),
 
+    path(
+        'my-basic-profile/',
+        views.MyBasicHospitalProfileView.as_view(),
+        name='hospital-basic-info'
+    ),
+
     # Hospital KYC Record CRUD URLs
     path(
         'kyc-records/',
