@@ -10,19 +10,19 @@ class HospitalSerializer(serializers.ModelSerializer):
     Serializer for Hospital model with all fields
     """
     email = serializers.EmailField(source='user.email', read_only=True)
-    user_username = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
         model = Hospital
         fields = [
-            'id', 'user', 'email', 'user_username', 'name', 'dob',
+            'id', 'user', 'email', 'name', 'dob',
             'phone_number', 'website', 'bio', 'photo', 'address', 'country',
-            'state', 'city', 'postal_code', 'id_document', 'kyc_status', 'is_visible',
-            'is_active', 'registration_number', 'license_name',
-            'license_issuance_authority', 'license_number', 'license_issue_date',
-            'license_expiry_date', 'license_document', 'created_at', 'updated_at'
+            'state', 'city', 'postal_code', 'id_document', 'kyc_status',
+            'is_visible', 'is_active', 'registration_number', 'license_name',
+            'license_issuance_authority', 'license_number',
+            'license_issue_date', 'license_expiry_date', 'license_document',
+            'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'email', 'user_username']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'email']
         extra_kwargs = {
             'user': {'write_only': True},
         }
@@ -53,6 +53,22 @@ class HospitalSerializer(serializers.ModelSerializer):
         return value
 
 
+class BasicHospitalSerializer(serializers.ModelSerializer):
+    """
+    Serializer to get Hospital Basic Info
+    """
+    email = serializers.EmailField(source='user.email', read_only=True)
+
+    class Meta:
+        model = Hospital
+        fields = [
+            'id', 'email', 'name', 'photo',
+        ]
+        read_only_fields = [
+            'id', 'email', 'name', 'photo',
+        ]
+
+
 class HospitalCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating Hospital instances
@@ -61,10 +77,10 @@ class HospitalCreateSerializer(serializers.ModelSerializer):
         model = Hospital
         fields = [
             'name', 'dob', 'phone_number', 'website', 'bio', 'photo',
-            'address', 'country', 'state', 'city', 'postal_code', 'is_visible',
-            'id_document', 'registration_number', 'license_name',
-            'license_issuance_authority', 'license_number', 'license_issue_date',
-            'license_expiry_date', 'license_document'
+            'address', 'country', 'state', 'city', 'postal_code',
+            'is_visible', 'id_document', 'registration_number',
+            'license_name', 'license_issuance_authority', 'license_number',
+            'license_issue_date', 'license_expiry_date', 'license_document'
         ]
 
     def create(self, validated_data):
@@ -84,10 +100,11 @@ class HospitalUpdateSerializer(serializers.ModelSerializer):
         model = Hospital
         fields = [
             'name', 'dob', 'phone_number', 'website', 'bio', 'photo',
-            'address', 'country', 'state', 'city', 'postal_code', 'is_visible',
-            'id_document', 'registration_number', 'license_name',
-            'license_issuance_authority', 'license_number', 'license_issue_date',
-            'license_expiry_date', 'license_document', 'is_visible'
+            'address', 'country', 'state', 'city', 'postal_code',
+            'is_visible', 'id_document', 'registration_number',
+            'license_name', 'license_issuance_authority', 'license_number',
+            'license_issue_date', 'license_expiry_date', 'license_document',
+            'is_visible'
         ]
 
 
@@ -101,9 +118,9 @@ class HospitalListSerializer(serializers.ModelSerializer):
         model = Hospital
         fields = [
             'id', 'name', 'phone_number', 'website', 'address', 'city',
-            'state', 'country', 'kyc_status', 'is_active', 'is_visible', 'email',
-            'registration_number', 'license_number', 'license_expiry_date',
-            'created_at', 'updated_at'
+            'state', 'country', 'kyc_status', 'is_active', 'is_visible',
+            'email', 'registration_number', 'license_number',
+            'license_expiry_date', 'created_at', 'updated_at'
         ]
 
 
@@ -111,9 +128,15 @@ class HospitalKYCRecordSerializer(serializers.ModelSerializer):
     """
     Serializer for Hospital KYC Record model
     """
-    hospital_name = serializers.CharField(source='hospital.name', read_only=True)
-    reviewed_by_username = serializers.CharField(source='reviewed_by.username', read_only=True)
-    reviewed_by_email = serializers.EmailField(source='reviewed_by.email', read_only=True)
+    hospital_name = serializers.CharField(
+        source='hospital.name', read_only=True
+    )
+    reviewed_by_username = serializers.CharField(
+        source='reviewed_by.username', read_only=True
+    )
+    reviewed_by_email = serializers.EmailField(
+        source='reviewed_by.email', read_only=True
+    )
 
     class Meta:
         model = HospitalKYCRecord
@@ -122,16 +145,18 @@ class HospitalKYCRecordSerializer(serializers.ModelSerializer):
             'reviewed_by', 'reviewed_by_username', 'reviewed_by_email',
             'reviewed_at'
         ]
-        read_only_fields = ['id', 'reviewed_at', 'hospital_name',
-                           'reviewed_by_username', 'reviewed_by_email']
+        read_only_fields = [
+            'id', 'reviewed_at', 'hospital_name',
+            'reviewed_by_username', 'reviewed_by_email'
+        ]
 
     def validate(self, data):
         """
         Validate KYC record data
         """
-        if data.get('status') in ['REJECTED', 'REQUIRES_UPDATE'] and not data.get('reason'):
+        if data.get('status') in ['REJECTED', 'REQUIRES_UPDATE'] and not data.get('reason'): # noqa
             raise serializers.ValidationError({
-                'reason': 'Reason is required when status is REJECTED or REQUIRES_UPDATE'
+                'reason': 'Reason is required when status is REJECTED or REQUIRES_UPDATE' # noqa
             })
         return data
 
