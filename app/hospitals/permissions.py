@@ -9,7 +9,10 @@ class IsOwnerOrAdminReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed for admins
-        if request.method in permissions.SAFE_METHODS and request.user.is_staff:
+        if (
+            request.method in
+            permissions.SAFE_METHODS and request.user.is_staff
+        ):
             return True
 
         # Write permissions are only allowed to the owner of the hospital
@@ -77,5 +80,5 @@ class IsVerifiedHospital(permissions.BasePermission):
         try:
             hospital = request.user.hospital_profile
             return hospital.kyc_status == 'APPROVED' and hospital.is_active
-        except:
+        except AttributeError:
             return False
