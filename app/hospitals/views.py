@@ -1,21 +1,22 @@
-from rest_framework import generics, status, filters
+from rest_framework import generics, status, filters, serializers
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
 from .models import Hospital, HospitalKYCRecord
 from .serializers import (
     HospitalSerializer,
     HospitalCreateSerializer,
     HospitalUpdateSerializer,
+    BasicHospitalSerializer,
     HospitalListSerializer,
     HospitalKYCRecordSerializer,
     HospitalKYCRecordCreateSerializer,
     HospitalKYCRecordUpdateSerializer
 )
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -32,10 +33,18 @@ class HospitalListView(generics.ListAPIView):
     queryset = Hospital.objects.all()
     serializer_class = HospitalListSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['kyc_status', 'is_active', 'country', 'state', 'city']
-    search_fields = ['name', 'registration_number', 'license_number', 'address']
-    ordering_fields = ['name', 'created_at', 'updated_at', 'license_expiry_date']
+    filter_backends = [
+        DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter
+    ]
+    filterset_fields = [
+        'kyc_status', 'is_active', 'country', 'state', 'city'
+    ]
+    search_fields = [
+        'name', 'registration_number', 'license_number', 'address'
+    ]
+    ordering_fields = [
+        'name', 'created_at', 'updated_at', 'license_expiry_date'
+    ]
     ordering = ['-created_at']
 
     def get_queryset(self):
@@ -99,7 +108,8 @@ class HospitalDeleteView(generics.DestroyAPIView):
     lookup_field = 'id'
 
     def get_object(self):
-        # Users can only delete their own hospital profile or admin can delete any
+        # Users can only delete their own hospital profile
+        # Admin can delete any
         obj = get_object_or_404(Hospital, id=self.kwargs['id'])
         if obj.user != self.request.user and not self.request.user.is_staff:
             self.permission_denied(self.request)
@@ -112,6 +122,7 @@ class MyHospitalProfileView(generics.RetrieveUpdateAPIView):
     """
     serializer_class = HospitalSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_object(self):
         try:
@@ -135,6 +146,30 @@ class MyHospitalProfileView(generics.RetrieveUpdateAPIView):
         return HospitalSerializer
 
 
+class MyBasicHospitalProfileView(generics.RetrieveAPIView):
+    """
+    Get the current user's basic hospital profile info
+    """
+    serializer_class = BasicHospitalSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        try:
+            return Hospital.objects.get(user=self.request.user)
+        except Hospital.DoesNotExist:
+            return None
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance is None:
+            return Response(
+                {"detail": "Hospital profile not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
 # Hospital KYC Record Views
 class HospitalKYCRecordListView(generics.ListAPIView):
     """
@@ -144,14 +179,20 @@ class HospitalKYCRecordListView(generics.ListAPIView):
     serializer_class = HospitalKYCRecordSerializer
     permission_classes = [IsAdminUser]
     pagination_class = StandardResultsSetPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter
+    ]
     filterset_fields = ['status', 'hospital__kyc_status']
-    search_fields = ['hospital__name', 'hospital__registration_number', 'reason']
+    search_fields = [
+        'hospital__name', 'hospital__registration_number', 'reason'
+    ]
     ordering_fields = ['reviewed_at', 'status']
     ordering = ['-reviewed_at']
 
     def get_queryset(self):
-        return super().get_queryset().select_related('hospital', 'reviewed_by')
+        return super().get_queryset().select_related(
+            'hospital', 'reviewed_by'
+        )
 
 
 class HospitalKYCRecordCreateView(generics.CreateAPIView):
@@ -181,7 +222,9 @@ class HospitalKYCRecordDetailView(generics.RetrieveAPIView):
     lookup_field = 'id'
 
     def get_queryset(self):
-        return super().get_queryset().select_related('hospital', 'reviewed_by')
+        return super().get_queryset().select_related(
+            'hospital', 'reviewed_by'
+        )
 
 
 class HospitalKYCRecordUpdateView(generics.UpdateAPIView):
@@ -223,11 +266,17 @@ class HospitalKYCRecordsForHospitalView(generics.ListAPIView):
         hospital_id = self.kwargs['hospital_id']
         hospital = get_object_or_404(Hospital, id=hospital_id)
 
-        # Users can only view their own hospital's KYC records, admins can view any
-        if hospital.user != self.request.user and not self.request.user.is_staff:
+        # Users can only view their own hospital's KYC records
+        # Admins can view any
+        if (
+            hospital.user != self.request.user and
+            not self.request.user.is_staff
+        ):
             return HospitalKYCRecord.objects.none()
 
-        return HospitalKYCRecord.objects.filter(hospital=hospital).select_related(
+        return HospitalKYCRecord.objects.filter(
+            hospital=hospital
+        ).select_related(
             'hospital', 'reviewed_by'
         ).order_by('-reviewed_at')
 
@@ -256,7 +305,10 @@ def hospital_stats(request):
         'pending_kyc': pending_kyc,
         'approved_kyc': approved_kyc,
         'rejected_kyc': rejected_kyc,
-        'kyc_completion_rate': round((approved_kyc / total_hospitals * 100) if total_hospitals > 0 else 0, 2)
+        'kyc_completion_rate': round(
+            (approved_kyc / total_hospitals * 100)
+            if total_hospitals > 0 else 0, 2
+        )
     }
 
     return Response(stats)
