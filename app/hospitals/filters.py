@@ -18,10 +18,18 @@ class HospitalFilter(django_filters.FilterSet):
     city = django_filters.CharFilter(lookup_expr='icontains')
 
     # Date filters
-    created_after = django_filters.DateFilter(field_name='created_at', lookup_expr='gte')
-    created_before = django_filters.DateFilter(field_name='created_at', lookup_expr='lte')
-    license_expires_after = django_filters.DateFilter(field_name='license_expiry_date', lookup_expr='gte')
-    license_expires_before = django_filters.DateFilter(field_name='license_expiry_date', lookup_expr='lte')
+    created_after = django_filters.DateFilter(
+        field_name='created_at', lookup_expr='gte'
+    )
+    created_before = django_filters.DateFilter(
+        field_name='created_at', lookup_expr='lte'
+    )
+    license_expires_after = django_filters.DateFilter(
+        field_name='license_expiry_date', lookup_expr='gte'
+    )
+    license_expires_before = django_filters.DateFilter(
+        field_name='license_expiry_date', lookup_expr='lte'
+    )
 
     # Status filters
     kyc_status = django_filters.ChoiceFilter(choices=[
@@ -89,9 +97,18 @@ class HospitalKYCRecordFilter(django_filters.FilterSet):
     ])
 
     # Date filters
-    reviewed_after = django_filters.DateTimeFilter(field_name='reviewed_at', lookup_expr='gte')
-    reviewed_before = django_filters.DateTimeFilter(field_name='reviewed_at', lookup_expr='lte')
-    reviewed_on = django_filters.DateFilter(field_name='reviewed_at', lookup_expr='date')
+    reviewed_after = django_filters.DateTimeFilter(
+        field_name='reviewed_at',
+        lookup_expr='gte'
+    )
+    reviewed_before = django_filters.DateTimeFilter(
+        field_name='reviewed_at',
+        lookup_expr='lte'
+    )
+    reviewed_on = django_filters.DateFilter(
+        field_name='reviewed_at',
+        lookup_expr='date'
+    )
 
     # Reviewer filters
     reviewed_by_username = django_filters.CharFilter(
