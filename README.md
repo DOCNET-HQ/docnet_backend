@@ -4,6 +4,9 @@ The Backend system for Docnet Telemedicine Platform.
 
 ![Image](https://github.com/user-attachments/assets/95c3bd7f-d1fe-4b98-9bfa-05ded12c76bb)
 
+The Hospital dashboard
+<img width="1787" height="1030" alt="Image" src="https://github.com/user-attachments/assets/addb6c5c-50b7-49c6-81b2-7cba54493316" />
+
 ## 🚀 Features
 
 - **Django**: Web framework for rapid development
