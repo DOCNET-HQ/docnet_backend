@@ -184,6 +184,11 @@ Access `http://localhost:5555` using username: `admin`, password: `admin` to mon
 4. Push to the branch (git push origin feature/amazing-feature)
 5. Open a Pull Request
 
+### Link To Other Repositories
+1. **HOSPITALS FRONTEND:** `https://github.com/DOCNET-HQ/docnet_hospitals_frontend`
+2. **DOCNET MODELS:** `https://github.com/DOCNET-HQ/docnet_models`
+3. **AI MICROSERVICE:** `https://github.com/DOCNET-HQ/docnet_ai`
+
 # Author
 
 ## [`Abimbola Ronald`](https://www.linkedin.com/in/abimbola-ronald-977299224/)
