@@ -29,12 +29,9 @@ jobs:
     - name: Run Django migrations
       run: make docker-migrate
 
-    - name: Collect static files
-      run: make collectstatic
-
     - name: Restart services
       run: make restart
 
-    - name: Restart Nginx (if you're using it)
+    - name: Restart Nginx
       run: |
         sudo service nginx restart
