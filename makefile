@@ -103,6 +103,11 @@ logs: ## View container logs
 ps: ## List containers
 	docker-compose -f $(DOCKER_COMPOSE_FILE) ps
 
+.PHONY: docker-migrate
+docker-migrate: ## Apply migrations in Docker container
+	@echo "Applying migrations in container..."
+	docker-compose -f $(DOCKER_COMPOSE_FILE) --env-file $(ENV_FILE) exec -T app python manage.py migrate --noinput
+
 .PHONY: clean-docker
 clean-docker: ## Clean up Docker resources
 	@echo "Cleaning up Docker resources..."
