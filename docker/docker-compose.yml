@@ -18,7 +18,7 @@ services:
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             gunicorn --bind 0.0.0.0:8000 --workers 4 --threads 2 app.wsgi:application"
+             gunicorn --bind 0.0.0.0:8000 --workers 2 --threads 2 app.wsgi:application"
     environment:
       - DEBUG=False
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
@@ -49,7 +49,7 @@ services:
     image: app:latest
     container_name: celery
     hostname: celery
-    command: celery -A app worker -l INFO --concurrency=4
+    command: celery -A app worker -l INFO --concurrency=2
     volumes:
       - ../app:/app
     environment:
