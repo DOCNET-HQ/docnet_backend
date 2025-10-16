@@ -6,13 +6,13 @@ from .models import AdminProfile
 @admin.register(AdminProfile)
 class AdminProfileAdmin(admin.ModelAdmin):
     list_display = [
-        'user', 'name', 'phone_number'
+        'user', 'name', 'phone_number', 'country',
     ]
     search_fields = [
         'user__email', 'user__username', 'name', 'phone_number'
     ]
     readonly_fields = ['id']
-    ordering = ('name',)
+    ordering = ('name', 'country')
     fieldsets = (
         (
             None,
@@ -30,6 +30,16 @@ class AdminProfileAdmin(admin.ModelAdmin):
             {
                 'fields': (
                     'id',
+                )
+            }
+        ),
+        (
+            _('Location Information'),
+            {
+                'fields': (
+                    'country',
+                    'state',
+                    'city',
                 )
             }
         ),
