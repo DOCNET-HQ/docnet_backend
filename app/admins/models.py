@@ -31,6 +31,27 @@ class AdminProfile(models.Model):
         blank=True,
         null=True
     )
+    country = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Country'
+    )
+    state = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='State or Province'
+    )
+    city = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='City or Town'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name if self.name else self.user.email
 
     class Meta:
         verbose_name_plural = "Admin Profiles"
