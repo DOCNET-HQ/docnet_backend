@@ -61,8 +61,7 @@ resetdb: ## Reset database (#!DANGER: destroys data)
 .PHONY: docker_shell
 container_shell: ## Open a shell in the Django container
 	@echo "Opening shell in Django container..."
-	cd docker && \
-	docker-compose run app bash
+	docker-compose --env-file $(ENV_FILE) run app bash
 
 .PHONY: dev
 dev: ## Start all containers in dev mode
