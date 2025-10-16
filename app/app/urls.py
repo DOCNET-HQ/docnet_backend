@@ -39,6 +39,10 @@ urlpatterns = [
         "hospitals/",
         include(("hospitals.urls", "hospitals"), namespace="hospitals")
     ),
+    path(
+        "admins/",
+        include(("admins.urls", "admins"), namespace="admins")
+    ),
     # path(
     #     "doctors/",
     #     include(("doctors.urls", "doctors"), namespace="doctors")
