@@ -88,7 +88,7 @@ class Profile(models.Model):
         help_text="KYC status of the user"
     )
 
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_visible = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
