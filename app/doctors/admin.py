@@ -16,7 +16,7 @@ class DoctorAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ['id', 'created_at', 'updated_at']
     list_filter = [
-        'is_active', 'kyc_status', 'gender', 'specialty',
+        'is_active', 'is_visible', 'kyc_status', 'gender', 'specialty',
         'license_expiry_date',
     ]
     ordering = ('-created_at',)
@@ -26,6 +26,7 @@ class DoctorAdmin(admin.ModelAdmin):
             {
                 'fields': (
                     'user',
+                    'hospital',
                     'name',
                     'dob',
                     'phone_number',
@@ -78,6 +79,7 @@ class DoctorAdmin(admin.ModelAdmin):
                     'id_document',
                     'kyc_status',
                     'is_active',
+                    'is_visible',
                 )
             }
         ),
