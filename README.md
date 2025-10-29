@@ -189,8 +189,11 @@ Access `http://localhost:5555` using username: `admin`, password: `admin` to mon
 
 ### Link To Other Repositories
 1. **HOSPITALS FRONTEND:** `https://github.com/DOCNET-HQ/docnet_hospitals_frontend`
-2. **DOCNET MODELS:** `https://github.com/DOCNET-HQ/docnet_models`
-3. **AI MICROSERVICE:** `https://github.com/DOCNET-HQ/docnet_ai`
+2. **PATIENTS FRONTEND:** `https://github.com/DOCNET-HQ/docnet_patients_frontend`
+3. **DOCTORS FRONTEND:** `https://github.com/DOCNET-HQ/docnet_doctors_frontend`
+4. **HOSPITALS FRONTEND:** `https://github.com/DOCNET-HQ/docnet_hospitals_frontend`
+5. **DOCNET MODELS:** `https://github.com/DOCNET-HQ/docnet_models`
+6. **AI MICROSERVICE:** `https://github.com/DOCNET-HQ/docnet_ai`
 
 # Author
 
