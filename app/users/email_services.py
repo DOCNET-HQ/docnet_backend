@@ -88,7 +88,7 @@ class EmailService:
             body = f"""
 Hi {name},
 
-You requested a password reset. Click below to set a new password:
+Use the link below to reset your password:
 {reset_link}
 
 This link will expire in 24 hours.
