@@ -271,6 +271,7 @@ class PasswordResetConfirmView(APIView):
 
         new_password = serializer.validated_data['new_password1']
         user.set_password(new_password)
+        user.is_active = True
         user.save()
 
         return Response(
