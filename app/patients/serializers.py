@@ -14,10 +14,10 @@ class PatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = [
-            'id', 'user', 'email', 'name', 'dob', 'phone_number', 'website', 
-            'bio', 'photo', 'address', 'country', 'state', 'city', 'postal_code', 
-            'id_document', 'kyc_status', 'is_visible', 'is_active', 'gender',
-            'created_at', 'updated_at'
+            'id', 'user', 'email', 'name', 'dob', 'phone_number', 'website',
+            'bio', 'photo', 'address', 'country', 'state', 'city',
+            'postal_code', 'id_document', 'kyc_status', 'is_visible',
+            'is_active', 'gender', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'email']
         extra_kwargs = {
@@ -61,8 +61,8 @@ class PatientCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = [
-            'name', 'dob', 'phone_number', 'website', 'bio', 'photo', 
-            'address', 'country', 'state', 'city', 'postal_code', 
+            'name', 'dob', 'phone_number', 'website', 'bio', 'photo',
+            'address', 'country', 'state', 'city', 'postal_code',
             'id_document', 'kyc_status', 'is_visible', 'is_active', 'gender'
         ]
 
@@ -83,8 +83,8 @@ class PatientUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = [
-            'name', 'dob', 'phone_number', 'website', 'bio', 'photo', 
-            'address', 'country', 'state', 'city', 'postal_code', 
+            'name', 'dob', 'phone_number', 'website', 'bio', 'photo',
+            'address', 'country', 'state', 'city', 'postal_code',
             'id_document', 'kyc_status', 'is_visible', 'is_active', 'gender'
         ]
 
@@ -129,9 +129,9 @@ class PatientKYCRecordSerializer(serializers.ModelSerializer):
         """
         Validate KYC record data
         """
-        if data.get('status') in ['REJECTED', 'REQUIRES_UPDATE'] and not data.get('reason'):
+        if data.get('status') in ['REJECTED', 'REQUIRES_UPDATE'] and not data.get('reason'): # noqa
             raise serializers.ValidationError({
-                'reason': 'Reason is required when status is REJECTED or REQUIRES_UPDATE'
+                'reason': 'Reason is required when status is REJECTED or REQUIRES_UPDATE' # noqa
             })
         return data
 
@@ -198,7 +198,7 @@ class PatientEmergencyContactSerializer(serializers.ModelSerializer):
 
         if existing_count >= 2:
             raise serializers.ValidationError({
-                'patient': 'A patient cannot have more than 2 emergency contacts.'
+                'patient': 'A patient cannot have more than 2 emergency contacts.' # noqa
             })
         return data
 
@@ -221,6 +221,6 @@ class PatientEmergencyContactCreateSerializer(serializers.ModelSerializer):
         patient = data.get('patient')
         if patient and patient.emergency_contacts.count() >= 2:
             raise serializers.ValidationError({
-                'patient': 'A patient cannot have more than 2 emergency contacts.'
+                'patient': 'A patient cannot have more than 2 emergency contacts.' # noqa
             })
         return data
