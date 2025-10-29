@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import make_password
 
 User = get_user_model()
 
+
 class PasswordService:
     @staticmethod
     def send_password_setup_email(request, user):
@@ -10,10 +11,10 @@ class PasswordService:
         Send password setup email to new users
         """
         from .email_services import EmailService
-        
+
         email_service = EmailService()
         email_service.send_password_reset_link(request, user)
-    
+
     @staticmethod
     def create_user_with_password_setup(email, role=None, **extra_fields):
         """
@@ -27,5 +28,5 @@ class PasswordService:
                 **extra_fields
             }
         )
-        
+
         return user, created
