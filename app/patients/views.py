@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404
 from .models import Patient, PatientKYCRecord, PatientEmergencyContact
 from .serializers import (
     PatientSerializer,
-    PatientCreateSerializer,
     PatientUpdateSerializer,
     BasicPatientSerializer,
     PatientListSerializer,
@@ -292,7 +291,7 @@ class PatientEmergencyContactListView(generics.ListAPIView):
     def get_queryset(self):
         patient_id = self.kwargs['patient_id']
         patient = get_object_or_404(Patient, id=patient_id)
-        
+
         # Users can only view their own emergency contacts
         # Admins can view any
         if (
@@ -316,11 +315,11 @@ class PatientEmergencyContactCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         patient_id = self.kwargs['patient_id']
         patient = get_object_or_404(Patient, id=patient_id)
-        
+
         # Users can only create contacts for their own profile
-        if patient.user != self.request.user and not self.request.user.is_staff:
+        if patient.user != self.request.user and not self.request.user.is_staff: # noqa
             self.permission_denied(self.request)
-        
+
         serializer.save(patient=patient)
 
 
@@ -335,9 +334,9 @@ class PatientEmergencyContactDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         patient_id = self.kwargs['patient_id']
         patient = get_object_or_404(Patient, id=patient_id)
-        
+
         # Users can only manage their own emergency contacts
-        if patient.user != self.request.user and not self.request.user.is_staff:
+        if patient.user != self.request.user and not self.request.user.is_staff: # noqa
             return PatientEmergencyContact.objects.none()
 
         return PatientEmergencyContact.objects.filter(patient=patient)
