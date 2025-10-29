@@ -22,8 +22,9 @@ class DoctorSerializer(serializers.ModelSerializer):
             'phone_number', 'website', 'bio', 'photo', 'address', 'country',
             'state', 'city', 'postal_code', 'id_document', 'kyc_status',
             'is_visible', 'is_active', 'gender', 'specialty', 'degree',
-            'years_of_experience', 'license_name', 'license_issuance_authority', 
-            'license_number', 'license_issue_date', 'license_expiry_date', 
+            'years_of_experience', 'license_name',
+            'license_issuance_authority', 'license_number',
+            'license_issue_date', 'license_expiry_date',
             'license_document', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'email']
@@ -85,16 +86,16 @@ class DoctorCreateSerializer(serializers.ModelSerializer):
     state = serializers.CharField(required=True)
     city = serializers.CharField(required=True)
     specialty = serializers.CharField(required=True)
-    
+
     class Meta:
         model = Doctor
         fields = [
-            'email', 'name', 'dob', 'phone_number', 'website', 'bio', 'photo', 
-            'address', 'country', 'state', 'city', 'postal_code', 
-            'id_document', 'kyc_status', 'is_visible', 'is_active', 'gender', 
-            'specialty', 'degree', 'years_of_experience', 'license_name', 
-            'license_issuance_authority', 'license_number', 'license_issue_date', 
-            'license_expiry_date', 'license_document',
+            'email', 'name', 'dob', 'phone_number', 'website', 'bio', 'photo',
+            'address', 'country', 'state', 'city', 'postal_code',
+            'id_document', 'kyc_status', 'is_visible', 'is_active', 'gender',
+            'specialty', 'degree', 'years_of_experience', 'license_name',
+            'license_issuance_authority', 'license_number',
+            'license_issue_date', 'license_expiry_date', 'license_document',
         ]
 
     def create(self, validated_data):
@@ -111,7 +112,7 @@ class DoctorCreateSerializer(serializers.ModelSerializer):
         if not user.role == 'doctor':
             raise serializers.ValidationError(
                 {
-                    "email": "This user has a profile and they are not a doctor."
+                    "email": "This user has a profile and they are not a doctor." # noqa
                 }
             )
 
@@ -127,7 +128,7 @@ class DoctorCreateSerializer(serializers.ModelSerializer):
             email_service.send_welcome_email(user)
 
             PasswordService.send_password_setup_email(
-                self.context['request'], 
+                self.context['request'],
                 user
             )
 
@@ -142,12 +143,13 @@ class DoctorUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Doctor
         fields = [
-            'name', 'dob', 'phone_number', 'website', 'bio', 'photo', 
-            'address', 'country', 'state', 'city', 'postal_code', 
-            'id_document', 'kyc_status', 'is_visible', 'is_active', 'gender', 
-            'specialty', 'degree', 'years_of_experience', 'license_name', 
-            'license_issuance_authority', 'license_number', 'license_issue_date', 
-            'license_expiry_date', 'license_document',
+            'name', 'dob', 'phone_number', 'website', 'bio', 'photo',
+            'address', 'country', 'state', 'city', 'postal_code',
+            'id_document', 'kyc_status', 'is_visible', 'is_active', 'gender',
+            'specialty', 'degree', 'years_of_experience', 'license_name',
+            'license_issuance_authority', 'license_number',
+            'license_issue_date',  'license_expiry_date',
+            'license_document',
         ]
 
 
@@ -160,10 +162,11 @@ class DoctorListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Doctor
         fields = [
-            'id', 'name', 'phone_number', 'photo', 'website', 'address', 'city',
-            'state', 'country', 'kyc_status', 'is_active', 'is_visible',
-            'specialty', 'email', 'license_number', 'kyc_status',
-            'license_expiry_date', 'created_at', 'updated_at'
+            'id', 'name', 'phone_number', 'photo', 'website', 'address',
+            'city', 'state', 'country', 'kyc_status', 'is_active',
+            'is_visible', 'specialty', 'email', 'license_number',
+            'kyc_status', 'license_expiry_date',
+            'created_at', 'updated_at'
         ]
 
 
