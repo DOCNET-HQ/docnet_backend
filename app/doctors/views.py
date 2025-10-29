@@ -1,4 +1,4 @@
-from rest_framework import generics, status, filters, serializers
+from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -54,8 +54,8 @@ class DoctorListView(generics.ListAPIView):
             queryset = queryset.filter(
                 hospital=self.request.user.hospital_profile
             )
-        
-        if self.request.user.role == 'doctor':\
+
+        if self.request.user.role == 'doctor':
             queryset = queryset.filter(
                 hospital=self.request.user.doctor_profile.hospital
             ).exclude(user=self.request.user)
