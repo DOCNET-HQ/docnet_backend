@@ -51,6 +51,13 @@ urlpatterns = [
         "admins/",
         include(("admins.urls", "admins"), namespace="admins")
     ),
+    path(
+        "",
+        include(
+            ("appointments.urls", "appointments"), 
+            namespace="appointments"
+        )
+    ),
 
     # API DOCCUMENTATION
     path(
