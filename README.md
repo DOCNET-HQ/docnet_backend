@@ -195,6 +195,9 @@ Access `http://localhost:5555` using username: `admin`, password: `admin` to mon
 5. **DOCNET MODELS:** `https://github.com/DOCNET-HQ/docnet_models`
 6. **AI MICROSERVICE:** `https://github.com/DOCNET-HQ/docnet_ai`
 
+## [`Video Presentation`](https://drive.google.com/file/d/1RM3rNHsASauJUrrm01fbtHlRGPF2BdAH/view?usp=sharing)
+
+
 # Author
 
 ## [`Abimbola Ronald`](https://www.linkedin.com/in/abimbola-ronald-977299224/)
