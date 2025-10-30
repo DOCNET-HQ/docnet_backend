@@ -1,7 +1,6 @@
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from .models import AdminProfile
@@ -11,13 +10,8 @@ from .serializers import (
     AdminUpdateSerializer,
     AdminListSerializer
 )
+from utils.pagination import StandardResultsSetPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-
-
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = 'page_size'
-    max_page_size = 100
 
 
 # Admin Views
