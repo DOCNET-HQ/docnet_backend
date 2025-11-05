@@ -54,7 +54,7 @@ urlpatterns = [
     path(
         "",
         include(
-            ("appointments.urls", "appointments"), 
+            ("appointments.urls", "appointments"),
             namespace="appointments"
         )
     ),
