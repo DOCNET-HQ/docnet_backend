@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
-from django.utils import timezone
+# from django.utils import timezone
 from .models import Appointment
 from .choices import AppointmentStatus, CancelledBy
 
@@ -12,7 +12,7 @@ class AppointmentAdmin(admin.ModelAdmin):
     """
     Admin interface for Appointment model with organized fieldsets
     """
-    
+
     list_display = [
         'id_short',
         'patient_link',
@@ -24,7 +24,7 @@ class AppointmentAdmin(admin.ModelAdmin):
         'is_upcoming_badge',
         'created_at'
     ]
-    
+
     list_filter = [
         'status',
         'appointment_type',
@@ -33,7 +33,7 @@ class AppointmentAdmin(admin.ModelAdmin):
         'created_at',
         'cancelled_by'
     ]
-    
+
     search_fields = [
         'id',
         'patient__user__first_name',
@@ -44,7 +44,7 @@ class AppointmentAdmin(admin.ModelAdmin):
         'reason',
         'notes'
     ]
-    
+
     readonly_fields = [
         'id',
         'created_at',
@@ -54,13 +54,13 @@ class AppointmentAdmin(admin.ModelAdmin):
         'is_past_display',
         'meeting_link_display'
     ]
-    
+
     date_hierarchy = 'scheduled_start_time'
-    
+
     list_per_page = 25
-    
+
     ordering = ['-scheduled_start_time']
-    
+
     # Organize fields into logical sections using fieldsets
     fieldsets = (
         (_('Basic Information'), {
@@ -79,7 +79,9 @@ class AppointmentAdmin(admin.ModelAdmin):
                 'reason',
                 'notes'
             ),
-            'description': _('Information about the appointment type and purpose')
+            'description': _(
+                'Information about the appointment type and purpose'
+            )
         }),
         (_('Schedule Information'), {
             'fields': (
@@ -118,14 +120,13 @@ class AppointmentAdmin(admin.ModelAdmin):
             'description': _('System timestamps')
         })
     )
-    
+
     # Custom methods for display
-    
     @admin.display(description='ID', ordering='id')
     def id_short(self, obj):
         """Display shortened UUID"""
         return str(obj.id)[:8]
-    
+
     @admin.display(description='Patient')
     def patient_link(self, obj):
         """Display patient as clickable link"""
@@ -135,7 +136,7 @@ class AppointmentAdmin(admin.ModelAdmin):
             url,
             f"{obj.patient.user.first_name} {obj.patient.user.last_name}"
         )
-    
+
     @admin.display(description='Doctor')
     def doctor_link(self, obj):
         """Display doctor as clickable link"""
@@ -145,7 +146,7 @@ class AppointmentAdmin(admin.ModelAdmin):
             url,
             f"Dr. {obj.doctor.user.first_name} {obj.doctor.user.last_name}"
         )
-    
+
     @admin.display(description='Status')
     def status_badge(self, obj):
         """Display status with color coding"""
@@ -160,33 +161,33 @@ class AppointmentAdmin(admin.ModelAdmin):
         }
         color = colors.get(obj.status, '#6c757d')
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px; font-weight: bold;">{}</span>',
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px; font-weight: bold;">{}</span>', # noqa
             color,
             obj.get_status_display()
         )
-    
+
     @admin.display(description='Upcoming', boolean=True)
     def is_upcoming_badge(self, obj):
         """Display if appointment is upcoming"""
         return obj.is_upcoming
-    
+
     @admin.display(description='Duration')
     def duration_display(self, obj):
         """Display appointment duration"""
         if obj.duration:
             return str(obj.duration)
         return '-'
-    
+
     @admin.display(description='Is Upcoming', boolean=True)
     def is_upcoming_display(self, obj):
         """Display if upcoming"""
         return obj.is_upcoming
-    
+
     @admin.display(description='Is Past', boolean=True)
     def is_past_display(self, obj):
         """Display if past"""
         return obj.is_past
-    
+
     @admin.display(description='Meeting Link')
     def meeting_link_display(self, obj):
         """Display meeting link as clickable"""
@@ -196,25 +197,28 @@ class AppointmentAdmin(admin.ModelAdmin):
                 obj.meeting_link
             )
         return '-'
-    
+
     # Custom actions
-    
     @admin.action(description='Mark selected as Confirmed')
     def mark_confirmed(self, request, queryset):
         """Bulk action to confirm appointments"""
         updated = queryset.filter(
             status=AppointmentStatus.SCHEDULED
         ).update(status=AppointmentStatus.CONFIRMED)
-        self.message_user(request, f'{updated} appointments were marked as confirmed.')
-    
+        self.message_user(
+            request, f'{updated} appointments were marked as confirmed.'
+        )
+
     @admin.action(description='Mark selected as Completed')
     def mark_completed(self, request, queryset):
         """Bulk action to complete appointments"""
         updated = queryset.filter(
             status=AppointmentStatus.IN_PROGRESS
         ).update(status=AppointmentStatus.COMPLETED)
-        self.message_user(request, f'{updated} appointments were marked as completed.')
-    
+        self.message_user(
+            request, f'{updated} appointments were marked as completed.'
+        )
+
     @admin.action(description='Cancel selected appointments')
     def cancel_appointments(self, request, queryset):
         """Bulk action to cancel appointments"""
@@ -228,14 +232,16 @@ class AppointmentAdmin(admin.ModelAdmin):
             cancelled_by=CancelledBy.SYSTEM
         )
         self.message_user(request, f'{updated} appointments were cancelled.')
-    
+
     actions = [mark_confirmed, mark_completed, cancel_appointments]
-    
+
     def get_queryset(self, request):
         """Optimize queryset with select_related"""
         qs = super().get_queryset(request)
-        return qs.select_related('patient', 'doctor', 'patient__user', 'doctor__user', 'created_by')
-    
+        return qs.select_related(
+            'patient', 'doctor', 'patient__user', 'doctor__user', 'created_by'
+        )
+
     def save_model(self, request, obj, form, change):
         """Set created_by on save"""
         if not change:  # Only on creation
