@@ -14,8 +14,5 @@ def create_admin_profile(sender, instance, created, **kwargs):
     """
 
     # Ensure the profile doesn't already exist
-    if (
-        instance.role == 'admin' and
-        not hasattr(instance, 'admin_profile')
-    ):
+    if instance.role == "admin" and not hasattr(instance, "admin_profile"):
         AdminProfile.objects.create(user=instance)
