@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
-# from django.utils import timezone
+
 from .models import Appointment
 from .choices import AppointmentStatus, CancelledBy
 
@@ -14,224 +14,197 @@ class AppointmentAdmin(admin.ModelAdmin):
     """
 
     list_display = [
-        'id_short',
-        'patient_link',
-        'doctor_link',
-        'appointment_type',
-        'status_badge',
-        'scheduled_start_time',
-        'timezone',
-        'is_upcoming_badge',
-        'created_at'
+        "id_short",
+        "appointment_type",
+        "status_badge",
+        "scheduled_start_time",
+        "timezone",
+        "is_upcoming_badge",
+        "meet_display",
+        "created_at",
     ]
 
     list_filter = [
-        'status',
-        'appointment_type',
-        'timezone',
-        'scheduled_start_time',
-        'created_at',
-        'cancelled_by'
+        "status",
+        "appointment_type",
+        "timezone",
+        "scheduled_start_time",
+        "created_at",
+        "cancelled_by",
     ]
 
     search_fields = [
-        'id',
-        'patient__user__first_name',
-        'patient__user__last_name',
-        'patient__user__email',
-        'doctor__user__first_name',
-        'doctor__user__last_name',
-        'reason',
-        'notes'
+        "id",
+        "patient__user__name",
+        "patient__user__email",
+        "doctor__user__name",
+        "reason",
+        "notes",
+        "meet__id",
     ]
 
     readonly_fields = [
-        'id',
-        'created_at',
-        'updated_at',
-        'duration_display',
-        'is_upcoming_display',
-        'is_past_display',
-        'meeting_link_display'
+        "id",
+        "created_at",
+        "updated_at",
+        "duration_display",
+        "is_upcoming_display",
+        "is_past_display",
+        "meet_display",
     ]
 
-    date_hierarchy = 'scheduled_start_time'
+    raw_id_fields = ["meet"]
+
+    date_hierarchy = "scheduled_start_time"
 
     list_per_page = 25
 
-    ordering = ['-scheduled_start_time']
+    ordering = ["-scheduled_start_time"]
 
-    # Organize fields into logical sections using fieldsets
     fieldsets = (
-        (_('Basic Information'), {
-            'fields': (
-                'id',
-                'patient',
-                'doctor',
-                'created_by'
-            ),
-            'description': _('Core appointment identification details')
-        }),
-        (_('Appointment Details'), {
-            'fields': (
-                'appointment_type',
-                'status',
-                'reason',
-                'notes'
-            ),
-            'description': _(
-                'Information about the appointment type and purpose'
-            )
-        }),
-        (_('Schedule Information'), {
-            'fields': (
-                'scheduled_start_time',
-                'scheduled_end_time',
-                'timezone',
-                'duration_display',
-                'is_upcoming_display',
-                'is_past_display'
-            ),
-            'description': _('Appointment timing and schedule details')
-        }),
-        (_('Telemedicine Details'), {
-            'fields': (
-                'meeting_link',
-                'meeting_link_display',
-                'technical_issues_reported'
-            ),
-            'classes': ('collapse',),
-            'description': _('Video conferencing and technical information')
-        }),
-        (_('Cancellation Information'), {
-            'fields': (
-                'cancellation_reason',
-                'cancelled_by'
-            ),
-            'classes': ('collapse',),
-            'description': _('Details if appointment was cancelled')
-        }),
-        (_('Metadata'), {
-            'fields': (
-                'created_at',
-                'updated_at'
-            ),
-            'classes': ('collapse',),
-            'description': _('System timestamps')
-        })
+        (
+            _("Basic Information"),
+            {
+                "fields": ("id", "patient", "doctor", "created_by"),
+                "description": _("Core appointment identification details"),
+            },
+        ),
+        (
+            _("Appointment Details"),
+            {
+                "fields": ("appointment_type", "status", "reason", "notes"),
+                "description": _("Information about the appointment type and purpose"),
+            },
+        ),
+        (
+            _("Schedule Information"),
+            {
+                "fields": (
+                    "scheduled_start_time",
+                    "scheduled_end_time",
+                    "timezone",
+                    "duration_display",
+                    "is_upcoming_display",
+                    "is_past_display",
+                ),
+                "description": _("Appointment timing and schedule details"),
+            },
+        ),
+        (
+            _("Telemedicine Details"),
+            {
+                "fields": (
+                    "meet",
+                    "meet_display",
+                    "technical_issues_reported",
+                ),
+                "classes": ("collapse",),
+                "description": _("Video conferencing and technical information"),
+            },
+        ),
+        (
+            _("Cancellation Information"),
+            {
+                "fields": ("cancellation_reason", "cancelled_by"),
+                "classes": ("collapse",),
+                "description": _("Details if appointment was cancelled"),
+            },
+        ),
+        (
+            _("Metadata"),
+            {
+                "fields": ("created_at", "updated_at"),
+                "classes": ("collapse",),
+                "description": _("System timestamps"),
+            },
+        ),
     )
 
     # Custom methods for display
-    @admin.display(description='ID', ordering='id')
+    @admin.display(description="ID", ordering="id")
     def id_short(self, obj):
         """Display shortened UUID"""
         return str(obj.id)[:8]
 
-    @admin.display(description='Patient')
-    def patient_link(self, obj):
-        """Display patient as clickable link"""
-        url = reverse('admin:users_patient_change', args=[obj.patient.id])
-        return format_html(
-            '<a href="{}">{}</a>',
-            url,
-            f"{obj.patient.user.first_name} {obj.patient.user.last_name}"
-        )
-
-    @admin.display(description='Doctor')
-    def doctor_link(self, obj):
-        """Display doctor as clickable link"""
-        url = reverse('admin:users_doctor_change', args=[obj.doctor.id])
-        return format_html(
-            '<a href="{}">{}</a>',
-            url,
-            f"Dr. {obj.doctor.user.first_name} {obj.doctor.user.last_name}"
-        )
-
-    @admin.display(description='Status')
+    @admin.display(description="Status")
     def status_badge(self, obj):
         """Display status with color coding"""
         colors = {
-            'scheduled': '#ffc107',  # amber
-            'confirmed': '#17a2b8',  # cyan
-            'in_progress': '#007bff',  # blue
-            'completed': '#28a745',  # green
-            'cancelled': '#dc3545',  # red
-            'no_show': '#6c757d',  # gray
-            'rescheduled': '#fd7e14'  # orange
+            "scheduled": "#ffc107",  # amber
+            "confirmed": "#17a2b8",  # cyan
+            "in_progress": "#007bff",  # blue
+            "completed": "#28a745",  # green
+            "cancelled": "#dc3545",  # red
+            "no_show": "#6c757d",  # gray
+            "rescheduled": "#fd7e14",  # orange
         }
-        color = colors.get(obj.status, '#6c757d')
+        color = colors.get(obj.status, "#6c757d")
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px; font-weight: bold;">{}</span>', # noqa
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px; font-weight: bold;">{}</span>',  # noqa
             color,
-            obj.get_status_display()
+            obj.get_status_display(),
         )
 
-    @admin.display(description='Upcoming', boolean=True)
+    @admin.display(description="Upcoming", boolean=True)
     def is_upcoming_badge(self, obj):
         """Display if appointment is upcoming"""
         return obj.is_upcoming
 
-    @admin.display(description='Duration')
+    @admin.display(description="Duration")
     def duration_display(self, obj):
         """Display appointment duration"""
         if obj.duration:
             return str(obj.duration)
-        return '-'
+        return "-"
 
-    @admin.display(description='Is Upcoming', boolean=True)
+    @admin.display(description="Is Upcoming", boolean=True)
     def is_upcoming_display(self, obj):
         """Display if upcoming"""
         return obj.is_upcoming
 
-    @admin.display(description='Is Past', boolean=True)
+    @admin.display(description="Is Past", boolean=True)
     def is_past_display(self, obj):
         """Display if past"""
         return obj.is_past
 
-    @admin.display(description='Meeting Link')
-    def meeting_link_display(self, obj):
-        """Display meeting link as clickable"""
-        if obj.meeting_link:
+    # NEW: Display meet information with link
+    @admin.display(description="Meet")
+    def meet_display(self, obj):
+        """Display meet information with admin link"""
+        if obj.meet:
+            meet_admin_url = reverse("admin:meet_meet_change", args=[obj.meet.id])
             return format_html(
-                '<a href="{}" target="_blank">Join Meeting</a>',
-                obj.meeting_link
+                '<a href="{}">{} (Channel: {})</a>',
+                meet_admin_url,
+                obj.meet.id,
+                str(obj.meet.channel_name)[:8] + "...",
             )
-        return '-'
+        return "-"
 
-    # Custom actions
-    @admin.action(description='Mark selected as Confirmed')
+    # Custom actions (keep your existing actions)
+    @admin.action(description="Mark selected as Confirmed")
     def mark_confirmed(self, request, queryset):
         """Bulk action to confirm appointments"""
-        updated = queryset.filter(
-            status=AppointmentStatus.SCHEDULED
-        ).update(status=AppointmentStatus.CONFIRMED)
-        self.message_user(
-            request, f'{updated} appointments were marked as confirmed.'
+        updated = queryset.filter(status=AppointmentStatus.SCHEDULED).update(
+            status=AppointmentStatus.CONFIRMED
         )
+        self.message_user(request, f"{updated} appointments were marked as confirmed.")
 
-    @admin.action(description='Mark selected as Completed')
+    @admin.action(description="Mark selected as Completed")
     def mark_completed(self, request, queryset):
         """Bulk action to complete appointments"""
-        updated = queryset.filter(
-            status=AppointmentStatus.IN_PROGRESS
-        ).update(status=AppointmentStatus.COMPLETED)
-        self.message_user(
-            request, f'{updated} appointments were marked as completed.'
+        updated = queryset.filter(status=AppointmentStatus.IN_PROGRESS).update(
+            status=AppointmentStatus.COMPLETED
         )
+        self.message_user(request, f"{updated} appointments were marked as completed.")
 
-    @admin.action(description='Cancel selected appointments')
+    @admin.action(description="Cancel selected appointments")
     def cancel_appointments(self, request, queryset):
         """Bulk action to cancel appointments"""
         updated = queryset.filter(
-            status__in=[
-                AppointmentStatus.SCHEDULED,
-                AppointmentStatus.CONFIRMED
-            ]
-        ).update(
-            status=AppointmentStatus.CANCELLED,
-            cancelled_by=CancelledBy.SYSTEM
-        )
-        self.message_user(request, f'{updated} appointments were cancelled.')
+            status__in=[AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED]
+        ).update(status=AppointmentStatus.CANCELLED, cancelled_by=CancelledBy.SYSTEM)
+        self.message_user(request, f"{updated} appointments were cancelled.")
 
     actions = [mark_confirmed, mark_completed, cancel_appointments]
 
@@ -239,7 +212,7 @@ class AppointmentAdmin(admin.ModelAdmin):
         """Optimize queryset with select_related"""
         qs = super().get_queryset(request)
         return qs.select_related(
-            'patient', 'doctor', 'patient__user', 'doctor__user', 'created_by'
+            "patient", "doctor", "patient__user", "doctor__user", "created_by", "meet"
         )
 
     def save_model(self, request, obj, form, change):
