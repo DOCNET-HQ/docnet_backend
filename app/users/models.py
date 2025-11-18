@@ -34,7 +34,7 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email, password):
         user = self.create_user(email, password)
-        user.role = 'admin'
+        user.role = "admin"
         user.is_active = True
         user.is_staff = True
         user.is_superuser = True
@@ -48,16 +48,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     Custom user model.
     """
 
-    id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False
-    )
-    email = models.EmailField(
-        max_length=255, unique=True, validators=[validate_email]
-    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(max_length=255, unique=True, validators=[validate_email])
 
-    role = models.CharField(
-        max_length=50, choices=USER_ROLES, default='patient'
-    )
+    role = models.CharField(max_length=50, choices=USER_ROLES, default="patient")
 
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
