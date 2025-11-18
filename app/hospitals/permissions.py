@@ -9,10 +9,7 @@ class IsOwnerOrAdminReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed for admins
-        if (
-            request.method in
-            permissions.SAFE_METHODS and request.user.is_staff
-        ):
+        if request.method in permissions.SAFE_METHODS and request.user.is_staff:
             return True
 
         # Write permissions are only allowed to the owner of the hospital
@@ -34,9 +31,9 @@ class IsHospitalOwnerOrAdmin(permissions.BasePermission):
             return True
 
         # Hospital owners can access their own hospital data
-        if hasattr(obj, 'user'):
+        if hasattr(obj, "user"):
             return obj.user == request.user
-        elif hasattr(obj, 'hospital'):
+        elif hasattr(obj, "hospital"):
             return obj.hospital.user == request.user
 
         return False
@@ -59,9 +56,9 @@ class IsAdminOrHospitalOwnerReadOnly(permissions.BasePermission):
 
         # Hospital owners have read-only access to their own data
         if request.method in permissions.SAFE_METHODS:
-            if hasattr(obj, 'user'):
+            if hasattr(obj, "user"):
                 return obj.user == request.user
-            elif hasattr(obj, 'hospital'):
+            elif hasattr(obj, "hospital"):
                 return obj.hospital.user == request.user
 
         return False
@@ -79,6 +76,6 @@ class IsVerifiedHospital(permissions.BasePermission):
         # Check if user has a verified hospital profile
         try:
             hospital = request.user.hospital_profile
-            return hospital.kyc_status == 'APPROVED' and hospital.is_active
+            return hospital.kyc_status == "APPROVED" and hospital.is_active
         except AttributeError:
             return False
