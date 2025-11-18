@@ -31,13 +31,13 @@ class EmailService:
             message,
             settings.EMAIL_HOST_USER,
             [user.email],
-            content_subtype="plain"
+            content_subtype="plain",
         )
 
     def send_account_verification_email(self, request, user):
         current_site = get_current_site(request)
         subject = "Verify Your Email"
-        name = user.name or user.email.split('@')[0]
+        name = user.name or user.email.split("@")[0]
 
         body = render_to_string(
             "mail/email_confirmation.html",
@@ -53,18 +53,18 @@ class EmailService:
             body,
             settings.EMAIL_HOST_USER,
             [user.email],
-            content_subtype="html"
+            content_subtype="html",
         )
 
     def send_password_reset_link(self, request, user):
         current_site = get_current_site(request)
         subject = "Password Reset Request - Docnet"
-        name = user.name or user.email.split('@')[0]
+        name = user.name or user.email.split("@")[0]
 
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        protocol = 'https' if request.is_secure() else 'http'
-        dashboard_url = settings.DASHBOARD_URLS.get(user.role, 'http://localhost:3000')
+        protocol = "https" if request.is_secure() else "http"
+        dashboard_url = settings.DASHBOARD_URLS.get(user.role, "http://localhost:3000")
 
         reset_link = ""
         if dashboard_url:
@@ -81,7 +81,7 @@ class EmailService:
                     "domain": current_site.domain,
                     "protocol": protocol,
                     "user": user,
-                }
+                },
             )
             subtype = "html"
         except Exception:
@@ -100,16 +100,17 @@ This link will expire in 24 hours.
             body,
             settings.EMAIL_HOST_USER,
             [user.email],
-            content_subtype=subtype
+            content_subtype=subtype,
         )
 
     def send_password_reset_confirmation(self, user):
         subject = "Password Reset Successful - Platform"
-        name = user.name or user.email.split('@')[0]
+        name = user.name or user.email.split("@")[0]
 
         try:
             body = render_to_string(
-                "mail/password_reset_confirmation.html", {"name": name, "user": user})
+                "mail/password_reset_confirmation.html", {"name": name, "user": user}
+            )
             subtype = "html"
         except Exception:
             body = f"""
@@ -126,5 +127,5 @@ If this wasn't you, contact support at {settings.EMAIL_HOST_USER}.
             body,
             settings.EMAIL_HOST_USER,
             [user.email],
-            content_subtype=subtype
+            content_subtype=subtype,
         )
