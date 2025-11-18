@@ -13,16 +13,15 @@ def health_check(request):
             cursor.execute("SELECT 1")
 
         # Test cache
-        cache.set('health_check', 'ok', 10)
-        cache_status = cache.get('health_check')
+        cache.set("health_check", "ok", 10)
+        cache_status = cache.get("health_check")
 
-        return JsonResponse({
-            'status': 'healthy',
-            'database': 'ok',
-            'cache': 'ok' if cache_status == 'ok' else 'error'
-        })
+        return JsonResponse(
+            {
+                "status": "healthy",
+                "database": "ok",
+                "cache": "ok" if cache_status == "ok" else "error",
+            }
+        )
     except Exception as e:
-        return JsonResponse({
-            'status': 'unhealthy',
-            'error': str(e)
-        }, status=503)
+        return JsonResponse({"status": "unhealthy", "error": str(e)}, status=503)
