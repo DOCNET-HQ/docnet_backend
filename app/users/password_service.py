@@ -22,11 +22,7 @@ class PasswordService:
         """
         user, created = User.objects.get_or_create(
             email=email,
-            defaults={
-                'role': role,
-                'password': make_password(None),
-                **extra_fields
-            }
+            defaults={"role": role, "password": make_password(None), **extra_fields},
         )
 
         return user, created
