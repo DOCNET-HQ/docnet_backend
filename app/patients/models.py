@@ -10,8 +10,7 @@ User = get_user_model()
 
 class Patient(Profile):
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE,
-        related_name='patient_profile'
+        User, on_delete=models.CASCADE, related_name="patient_profile"
     )
 
     gender = models.CharField(
@@ -22,23 +21,21 @@ class Patient(Profile):
     )
 
     class Meta:
-        verbose_name = 'Patient'
-        verbose_name_plural = 'Patients'
-        ordering = ['-created_at']
+        verbose_name = "Patient"
+        verbose_name_plural = "Patients"
+        ordering = ["-created_at"]
 
 
 class PatientKYCRecord(KYCRecord):
     patient = models.ForeignKey(
-        Patient,
-        on_delete=models.CASCADE,
-        related_name='kyc_records'
+        Patient, on_delete=models.CASCADE, related_name="kyc_records"
     )
     reviewed_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='patient_kyc_reviews'
+        related_name="patient_kyc_reviews",
     )
 
     def __str__(self):
@@ -47,14 +44,12 @@ class PatientKYCRecord(KYCRecord):
     class Meta:
         verbose_name = "Patient KYC Record"
         verbose_name_plural = "Patient KYC Records"
-        ordering = ['-reviewed_at']
+        ordering = ["-reviewed_at"]
 
 
 class PatientEmergencyContact(models.Model):
     patient = models.ForeignKey(
-        Patient,
-        on_delete=models.CASCADE,
-        related_name='emergency_contacts'
+        Patient, on_delete=models.CASCADE, related_name="emergency_contacts"
     )
     name = models.CharField(max_length=255)
     relationship = models.CharField(max_length=100)
@@ -64,12 +59,8 @@ class PatientEmergencyContact(models.Model):
 
     preferred_contact_method = models.CharField(
         max_length=10,
-        choices=[
-            ('phone', 'Phone'),
-            ('email', 'Email'),
-            ('sms', 'SMS')
-        ],
-        default='phone'
+        choices=[("phone", "Phone"), ("email", "Email"), ("sms", "SMS")],
+        default="phone",
     )
 
     def __str__(self):
@@ -89,4 +80,4 @@ class PatientEmergencyContact(models.Model):
     class Meta:
         verbose_name = "Patient Emergency Contact"
         verbose_name_plural = "Patient Emergency Contacts"
-        ordering = ['name']
+        ordering = ["name"]
