@@ -18,7 +18,7 @@ services:
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             gunicorn --bind 0.0.0.0:8000 --workers 2 --threads 2 app.wsgi:application"
+             uvicorn app.asgi:application --host 0.0.0.0 --port 8000 --workers 4 --loop uvloop --http httptools"
     environment:
       - DEBUG=False
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
