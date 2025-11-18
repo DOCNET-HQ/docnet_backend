@@ -9,14 +9,9 @@ User = get_user_model()
 
 class AdminProfile(models.Model):
     # User information
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE,
-        related_name='admin_profile'
+        User, on_delete=models.CASCADE, related_name="admin_profile"
     )
     name = models.CharField(
         max_length=255,
@@ -26,26 +21,10 @@ class AdminProfile(models.Model):
         max_length=15,
         blank=True,
     )
-    photo = models.ImageField(
-        upload_to=upload_profile_photo,
-        blank=True,
-        null=True
-    )
-    country = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text='Country'
-    )
-    state = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text='State or Province'
-    )
-    city = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text='City or Town'
-    )
+    photo = models.ImageField(upload_to=upload_profile_photo, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, help_text="Country")
+    state = models.CharField(max_length=100, blank=True, help_text="State or Province")
+    city = models.CharField(max_length=100, blank=True, help_text="City or Town")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
