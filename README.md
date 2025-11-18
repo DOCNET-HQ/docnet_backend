@@ -15,7 +15,7 @@ The Hospital dashboard
 - **PostgreSQL**: Production-ready database
 - **Docker**: Containerized environment for consistency
 - **Flower**: Web-based tool for monitoring Celery tasks
-- **Gunicorn**: WSGI HTTP Server for production
+- **Uvicorn**: ASGI HTTP Server for production
 - **Health Checks**: Built-in health monitoring
 - **Makefile**: Simplified command execution
 
