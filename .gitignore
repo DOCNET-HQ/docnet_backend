@@ -128,3 +128,5 @@ staticfiles/
 
 # flower
 flower
+
+commit-files.sh
