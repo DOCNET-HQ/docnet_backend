@@ -17,11 +17,14 @@ class UserSerializer(serializers.ModelSerializer):
     """
     Serializer for the user object
     """
-    role = serializers.ChoiceField(choices=(
-        ('doctor', 'Doctor'),
-        ('patient', 'Patient'),
-        ('hospital', 'Hospital'),
-    ))
+
+    role = serializers.ChoiceField(
+        choices=(
+            ("doctor", "Doctor"),
+            ("patient", "Patient"),
+            ("hospital", "Hospital"),
+        )
+    )
     name = serializers.CharField(max_length=100, write_only=True)
     country = serializers.CharField(max_length=100, write_only=True)
     state = serializers.CharField(max_length=100, write_only=True)
@@ -56,52 +59,53 @@ class UserSerializer(serializers.ModelSerializer):
         Create a user with encrypted password and corresponding profile
         """
         # Extract profile data
-        name = validated_data.pop('name')
-        country = validated_data.pop('country')
-        state = validated_data.pop('state')
-        city = validated_data.pop('city')
-        phone_number = validated_data.pop('phone_number')
+        name = validated_data.pop("name")
+        country = validated_data.pop("country")
+        state = validated_data.pop("state")
+        city = validated_data.pop("city")
+        phone_number = validated_data.pop("phone_number")
         # Keep role in validated_data for user creation
-        role = validated_data.get('role')
+        role = validated_data.get("role")
 
         # Create user
-        user = get_user_model().objects.create_user(
-            **validated_data, is_active=False
-        )
+        user = get_user_model().objects.create_user(**validated_data, is_active=False)
 
         # Create the appropriate profile based on role
-        if role == 'patient':
+        if role == "patient":
             # Import here to avoid circular imports
             from patients.models import Patient
+
             Patient.objects.create(
                 user=user,
                 name=name,
                 country=country,
                 state=state,
                 city=city,
-                phone_number=phone_number
+                phone_number=phone_number,
             )
-        elif role == 'doctor':
+        elif role == "doctor":
             # Import here to avoid circular imports
             from doctors.models import Doctor
+
             Doctor.objects.create(
                 user=user,
                 name=name,
                 country=country,
                 state=state,
                 city=city,
-                phone_number=phone_number
+                phone_number=phone_number,
             )
-        elif role == 'hospital':
+        elif role == "hospital":
             # Import here to avoid circular imports
             from hospitals.models import Hospital
+
             Hospital.objects.create(
                 user=user,
                 name=name,
                 country=country,
                 state=state,
                 city=city,
-                phone_number=phone_number
+                phone_number=phone_number,
             )
         # No profile creation for admin role
 
@@ -112,7 +116,7 @@ class UserSerializer(serializers.ModelSerializer):
         Update a user, setting the password correctly and return it
         """
         # Remove profile fields from validated_data if present
-        profile_fields = ['name', 'country', 'state', 'city', 'phone_number']
+        profile_fields = ["name", "country", "state", "city", "phone_number"]
         profile_data = {}
 
         for field in profile_fields:
@@ -120,7 +124,7 @@ class UserSerializer(serializers.ModelSerializer):
                 profile_data[field] = validated_data.pop(field)
 
         # Update user instance
-        password = validated_data.pop('password', None)
+        password = validated_data.pop("password", None)
         user = super().update(instance, validated_data)
 
         if password:
@@ -160,7 +164,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise ValidationError(
                 {
                     "email": "User with this email does not exist.",
-                    "code": "user_not_found"
+                    "code": "user_not_found",
                 }
             )
 
@@ -168,48 +172,43 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise ValidationError(
                 {
                     "email": "You need to verify your email.",
-                    "code": "account_not_activated"
+                    "code": "account_not_activated",
                 },
             )
 
         if not user_.check_password(attrs["password"]):
             raise ValidationError(
-                {
-                    "password": "Incorrect password.",
-                    "code": "incorrect_password"
-                }
+                {"password": "Incorrect password.", "code": "incorrect_password"}
             )
 
         # Validate email and password
         data = super().validate(attrs)
 
         if input_role not in list(zip(*USER_ROLES))[0]:
-            raise ValidationError(
-                {"role": f"{input_role} is an Invalid role."}
-            )
+            raise ValidationError({"role": f"{input_role} is an Invalid role."})
 
         # Check if the user's role matches the provided role
         if self.user.role != input_role:
             raise ValidationError(
                 {
-                    "role": f"{self.user.role} cannot login on the {input_role} portal." # noqa
+                    "role": f"{self.user.role} cannot login on the {input_role} portal."  # noqa
                 }
             )
 
-        if self.user.role == 'admin' and not self.user.is_staff:
+        if self.user.role == "admin" and not self.user.is_staff:
             raise ValidationError(
                 {
                     "password": "You have not been added as a staff.",
-                    "code": "staff_access_required"
+                    "code": "staff_access_required",
                 }
             )
 
         data["user"] = {}
 
         if (
-            hasattr(self.user, "profile") and
-            self.user.profile is not None and
-            self.user.profile.photo
+            hasattr(self.user, "profile")
+            and self.user.profile is not None
+            and self.user.profile.photo
         ):
             data["user"]["photo"] = self.user.profile.photo.url
         else:
