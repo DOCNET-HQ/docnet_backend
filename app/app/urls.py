@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from app.health import health_check
 from django.urls import path, include
@@ -27,44 +28,20 @@ from drf_spectacular.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("rest_framework.urls")),
-
     path("health/", health_check, name="health-check"),
-
     # APP URLS
-    path(
-        "users/",
-        include(("users.urls", "users"), namespace="users")
-    ),
-    path(
-        "hospitals/",
-        include(("hospitals.urls", "hospitals"), namespace="hospitals")
-    ),
-    path(
-        "doctors/",
-        include(("doctors.urls", "doctors"), namespace="doctors")
-    ),
-    path(
-        "patients/",
-        include(("patients.urls", "patients"), namespace="patients")
-    ),
-    path(
-        "admins/",
-        include(("admins.urls", "admins"), namespace="admins")
-    ),
-    path(
-        "",
-        include(
-            ("appointments.urls", "appointments"),
-            namespace="appointments"
-        )
-    ),
-
+    path("users/", include(("users.urls", "users"), namespace="users")),
+    path("profiles/", include(("profiles.urls", "profiles"), namespace="profiles")),
+    path("hospitals/", include(("hospitals.urls", "hospitals"), namespace="hospitals")),
+    path("doctors/", include(("doctors.urls", "doctors"), namespace="doctors")),
+    path("patients/", include(("patients.urls", "patients"), namespace="patients")),
+    path("admins/", include(("admins.urls", "admins"), namespace="admins")),
+    path("", include(("appointments.urls", "appointments"), namespace="appointments")),
+    path("chat/", include(("chat.urls", "chat"), namespace="chat")),
+    path("reviews/", include(("reviews.urls", "reviews"), namespace="reviews")),
+    path("meet/", include(("meet.urls", "meet"), namespace="meet")),
     # API DOCCUMENTATION
-    path(
-        "api/docs/schema/",
-        SpectacularAPIView.as_view(),
-        name="api-schema"
-    ),
+    path("api/docs/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path(
         "api/docs/swagger/",
         SpectacularSwaggerView.as_view(url_name="api-schema"),
