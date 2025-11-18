@@ -33,10 +33,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Third-party apps
+    "channels",
     "django_countries",
-    'django_celery_beat',
+    "django_celery_beat",
     "django_celery_results",
     "corsheaders",
     "phonenumber_field",
@@ -44,9 +44,9 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "rest_framework_simplejwt",
     "storages",
-
     # Local apps
     "core",
+    "chat",
     "users",
     "utils",
     "profiles",
@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     "appointments",
     "notifications",
     "reviews",
-    "admins"
+    "admins",
+    "meet",
 ]
 
 MIDDLEWARE = [
@@ -90,6 +91,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "app.wsgi.application"
+ASGI_APPLICATION = "app.asgi.application"
 
 
 # Database
@@ -359,18 +361,10 @@ CELERY_TASK_SOFT_TIME_LIMIT = 20 * 60  # 20 minutes
 
 # Dashboard URLs
 DASHBOARD_URLS = {
-    "hospital": config(
-        "HOSPITAL_DASHBOARD_URL", default="http://localhost:3000"
-    ),
-    "doctor": config(
-        "DOCTOR_DASHBOARD_URL", default="http://localhost:3001"
-    ),
-    "patient": config(
-        "PATIENT_DASHBOARD_URL", default="http://localhost:3002"
-    ),
-    "admin": config(
-        "ADMIN_DASHBOARD_URL", default="http://localhost:3003"
-    )
+    "hospital": config("HOSPITAL_DASHBOARD_URL", default="http://localhost:3000"),
+    "doctor": config("DOCTOR_DASHBOARD_URL", default="http://localhost:3001"),
+    "patient": config("PATIENT_DASHBOARD_URL", default="http://localhost:3002"),
+    "admin": config("ADMIN_DASHBOARD_URL", default="http://localhost:3003"),
 }
 
 
@@ -387,10 +381,23 @@ STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
     },
-
     # For css and js file management
     "staticfiles": {
         "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
-    }
+    },
 }
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": ["redis://redis:6379/0"],
+            "symmetric_encryption_keys": [SECRET_KEY],  # Encrypt messages
+        },
+    },
+}
+
+# Agora Settings
+AGORA_APP_ID = config("AGORA_APP_ID", default="app_id")
+AGORA_APP_CERTIFICATE = config("AGORA_APP_CERTIFICATE", default="certificate")
+AGORA_TOKEN_EXPIRES_IN = config("AGORA_TOKEN_EXPIRES_IN", default=3600, cast=int)
