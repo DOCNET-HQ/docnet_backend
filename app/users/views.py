@@ -54,10 +54,7 @@ class ListCreateUserView(generics.ListCreateAPIView):
             logger.error(f"Failed to send welcome email: {str(e)}")
 
         try:
-            email_service.send_account_verification_email(
-                self.request,
-                user
-            )
+            email_service.send_account_verification_email(self.request, user)
         except Exception as e:
             logger.error(f"Failed to send verification email: {str(e)}")
 
@@ -127,9 +124,7 @@ class LogOutAPIView(APIView):
 
 class JWTSetCookieMixin:
     def finalize_response(self, request, response, *args, **kwargs):
-        response = super().finalize_response(
-            request, response, *args, **kwargs
-        )
+        response = super().finalize_response(request, response, *args, **kwargs)
 
         if isinstance(response, Response):
             refresh_token = response.data.get("refresh")  # noqa
@@ -203,15 +198,14 @@ class PasswordResetView(APIView):
 
         # Get user by email
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
         try:
-            user = User.objects.get(email=serializer.validated_data['email'])
+            user = User.objects.get(email=serializer.validated_data["email"])
         except User.DoesNotExist:
             return Response(
-                {
-                    "detail": "A password reset link has been sent."
-                },
-                status=status.HTTP_200_OK
+                {"detail": "A password reset link has been sent."},
+                status=status.HTTP_200_OK,
             )
 
         # Send password reset email
@@ -220,9 +214,9 @@ class PasswordResetView(APIView):
 
         return Response(
             {
-                "detail": "If an account with that email exists, you will receive a password reset link shortly." # noqa
+                "detail": "If an account with that email exists, you will receive a password reset link shortly."  # noqa
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
@@ -238,11 +232,10 @@ class PasswordResetConfirmView(APIView):
     - new_password1: New password
     - new_password2: New password confirmation
     """
+
     serializer_class = PasswordResetConfirmSerializer
 
-    @method_decorator(
-        sensitive_post_parameters('new_password1', 'new_password2')
-    )
+    @method_decorator(sensitive_post_parameters("new_password1", "new_password2"))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
@@ -250,31 +243,27 @@ class PasswordResetConfirmView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        uidb64 = kwargs.get('uidb64')
-        token = kwargs.get('token')
+        uidb64 = kwargs.get("uidb64")
+        token = kwargs.get("token")
 
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = get_user_model()._default_manager.get(pk=uid)
-        except (
-            TypeError, ValueError, OverflowError, get_user_model().DoesNotExist
-        ):
+        except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist):
             user = None
 
-        if user is None or not default_token_generator.check_token(
-            user, token
-        ):
+        if user is None or (not default_token_generator.check_token(user, token)):
             return Response(
                 {"detail": "Invalid password reset link"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        new_password = serializer.validated_data['new_password1']
+        new_password = serializer.validated_data["new_password1"]
         user.set_password(new_password)
         user.is_active = True
         user.save()
 
         return Response(
             {"detail": "Password has been reset successfully."},
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
