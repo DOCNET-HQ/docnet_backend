@@ -5,3 +5,5 @@ exclude =
     manage.py,
     settings.py,
     email_services.py,
+    upload_specialty_images.py
+max-line-length = 90
