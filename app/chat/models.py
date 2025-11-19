@@ -6,6 +6,10 @@ import shortuuid
 User = get_user_model()
 
 
+def generate_short_uuid():
+    return shortuuid.uuid()
+
+
 class ChatRoom(models.Model):
     ROOM_TYPES = (
         ("direct", "Direct Message"),
@@ -13,7 +17,9 @@ class ChatRoom(models.Model):
         ("video_call", "Video Call"),
     )
 
-    id = models.CharField(max_length=30, primary_key=True, default=shortuuid.uuid)
+    id = models.CharField(
+        max_length=30, primary_key=True, default=generate_short_uuid
+    )
     name = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     room_type = models.CharField(max_length=30, choices=ROOM_TYPES, default="direct")
@@ -138,7 +144,9 @@ class UserStatus(models.Model):
 
 class GroupInvite(models.Model):
     room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name="invites")
-    code = models.CharField(max_length=50, unique=True, default=shortuuid.uuid)
+    code = models.CharField(
+        max_length=50, unique=True, default=generate_short_uuid
+    )
     created_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="created_invites"
     )
