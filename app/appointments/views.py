@@ -69,6 +69,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         elif hasattr(user, "patient_profile"):
             queryset = queryset.filter(patient=user.patient_profile)
 
+        elif hasattr(user, "hospital_profile"):
+            return queryset
+
+        elif hasattr(user, "admin_profile"):
+            return queryset
+
         # Staff/admin can see all
         elif not user.is_staff:
             queryset = queryset.none()
