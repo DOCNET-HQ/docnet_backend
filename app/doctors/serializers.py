@@ -310,7 +310,6 @@ class DoctorKYCRecordSerializer(serializers.ModelSerializer):
             "doctor_name",
             "status",
             "reason",
-            "reviewed_by",
             "reviewed_by_email",
             "reviewed_at",
         ]
