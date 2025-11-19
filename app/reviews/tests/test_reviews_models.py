@@ -13,10 +13,18 @@ class ReviewBaseModelTest(TestCase):
         self.user = User.objects.create_user(
             email="test@example.com", password="testpass123"
         )
+        self.user2 = User.objects.create_user(
+            email="doctor@example.com", password="testpass123"
+        )
+        self.user3 = User.objects.create_user(
+            email="hospital@example.com", password="testpass123"
+        )
         self.doctor = Doctor.objects.create(
-            name="Dr. Test Doctor", specialization="Cardiology"
+            user=self.user2,
+            name="Dr. Test Doctor", specialty="Cardiology"
         )
         self.hospital = Hospital.objects.create(
+            user=self.user3,
             name="Test Hospital", address="123 Test St"
         )
 
