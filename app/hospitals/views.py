@@ -1,11 +1,16 @@
+from datetime import timedelta
+from django.utils import timezone
+from rest_framework import viewsets
+from django.db.models import Count
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Hospital, HospitalKYCRecord
 from rest_framework import generics, status, filters, serializers
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
 from .filters import HospitalFilter, HospitalKYCRecordFilter
-from .models import Hospital, HospitalKYCRecord
 from .serializers import (
     HospitalSerializer,
     HospitalDetailSerializer,
@@ -13,6 +18,9 @@ from .serializers import (
     HospitalUpdateSerializer,
     BasicHospitalSerializer,
     HospitalListSerializer,
+    HospitalStatsSerializer,
+    AdminHospitalStatsSerializer,
+    BasicHospitalStatsSerializer,
     HospitalKYCRecordSerializer,
     HospitalKYCRecordCreateSerializer,
     HospitalKYCRecordUpdateSerializer,
@@ -277,37 +285,6 @@ class HospitalKYCRecordsForHospitalView(generics.ListAPIView):
         )
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def hospital_stats(request):
-    """
-    Get statistics about hospitals
-    """
-    if not request.user.is_staff:
-        return Response(
-            {"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN
-        )
-
-    total_hospitals = Hospital.objects.count()
-    active_hospitals = Hospital.objects.filter(is_active=True).count()
-    pending_kyc = Hospital.objects.filter(kyc_status="PENDING").count()
-    approved_kyc = Hospital.objects.filter(kyc_status="APPROVED").count()
-    rejected_kyc = Hospital.objects.filter(kyc_status="REJECTED").count()
-
-    stats = {
-        "total_hospitals": total_hospitals,
-        "active_hospitals": active_hospitals,
-        "pending_kyc": pending_kyc,
-        "approved_kyc": approved_kyc,
-        "rejected_kyc": rejected_kyc,
-        "kyc_completion_rate": round(
-            (approved_kyc / total_hospitals * 100) if total_hospitals > 0 else 0, 2
-        ),
-    }
-
-    return Response(stats)
-
-
 @api_view(["POST"])
 @permission_classes([IsAdminUser])
 def bulk_update_hospital_status(request):
@@ -347,3 +324,169 @@ def bulk_update_hospital_status(request):
             "updated_count": updated_count,
         }
     )
+
+
+class HospitalStatsViewSet(viewsets.ViewSet):
+    """
+    ViewSet for hospital statistics
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=["get"], url_path="dashboard-stats")
+    def dashboard_stats(self, request):
+        """Get dashboard statistics based on user role"""
+        user = request.user
+
+        if hasattr(user, "hospital_profile"):
+            return self._get_hospital_admin_stats(user.hospital_profile)
+        elif hasattr(user, "admin_profile") or user.is_staff:
+            return self._get_admin_stats()
+        else:
+            # For doctors or other roles, return basic stats
+            return self._get_basic_stats()
+
+    def _get_hospital_admin_stats(self, hospital):
+        """Get statistics for hospital admin dashboard"""
+        now = timezone.now()
+        month_ago = now - timedelta(days=30)
+
+        # Get this hospital's data
+        hospital_obj = Hospital.objects.get(id=hospital.id)
+
+        # Calculate metrics
+        total_doctors = hospital_obj.doctors.count()
+
+        active_doctors = hospital_obj.doctors.filter(is_active=True).count()
+
+        # Hospital rating
+        hospital_rating = (
+            hospital_obj.rating.average if hasattr(hospital_obj, "rating") else 0
+        )
+
+        # Total reviews
+        total_reviews = (
+            hospital_obj.rating.total_reviews if hasattr(hospital_obj, "rating") else 0
+        )
+
+        # New doctors this month
+        doctors_this_month = hospital_obj.doctors.filter(
+            created_at__gte=month_ago
+        ).count()
+
+        # Appointment statistics (assuming you have an appointments model)
+        from appointments.models import Appointment
+
+        appointments_this_month = Appointment.objects.filter(
+            doctor__in=hospital_obj.doctors.all(), created_at__gte=month_ago
+        ).count()
+
+        # Top performing specialties
+        top_specialties = (
+            hospital_obj.doctors.values("specialty")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:5]
+        )
+
+        stats = {
+            "total_doctors": total_doctors,
+            "active_doctors": active_doctors,
+            "hospital_rating": round(hospital_rating, 1),
+            "total_reviews": total_reviews,
+            "doctors_this_month": doctors_this_month,
+            "appointments_this_month": appointments_this_month,
+            "top_specialties": list(top_specialties),
+        }
+
+        serializer = HospitalStatsSerializer(stats)
+        return Response(serializer.data)
+
+    def _get_admin_stats(self):
+        """Get statistics for admin dashboard"""
+        now = timezone.now()
+        month_ago = now - timedelta(days=30)
+
+        # Get all hospitals
+        all_hospitals = Hospital.objects.all()
+
+        # Calculate metrics
+        total_hospitals = all_hospitals.count()
+
+        verified_hospitals = all_hospitals.filter(kyc_status="VERIFIED").count()
+
+        active_hospitals = all_hospitals.filter(is_active=True).count()
+
+        pending_kyc = all_hospitals.filter(kyc_status="PENDING").count()
+
+        # Hospitals with doctors
+        total_hospitals_with_doctors = (
+            all_hospitals.filter(doctors__isnull=False).distinct().count()
+        )
+
+        # Cities covered
+        total_cities = all_hospitals.values("city").distinct().count()
+
+        # System-wide KYC completion rate
+        system_wide_kyc_completion = (
+            (verified_hospitals / total_hospitals * 100) if total_hospitals > 0 else 0
+        )
+
+        # Hospitals growth rate (this month vs last month)
+        last_month_start = month_ago.replace(day=1)
+        this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        hospitals_this_month = all_hospitals.filter(
+            created_at__gte=this_month_start
+        ).count()
+
+        hospitals_last_month = all_hospitals.filter(
+            created_at__gte=last_month_start, created_at__lt=this_month_start
+        ).count()
+
+        hospitals_growth_rate = (
+            ((hospitals_this_month - hospitals_last_month) / hospitals_last_month * 100)
+            if hospitals_last_month > 0
+            else 0
+        )
+
+        # Total specialties across all hospitals
+        from doctors.models import Doctor
+
+        total_specialties = Doctor.objects.values("specialty").distinct().count()
+
+        # Top cities by hospital count
+        top_cities = (
+            all_hospitals.values("city", "state")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:5]
+        )
+
+        stats = {
+            "total_hospitals": total_hospitals,
+            "verified_hospitals": verified_hospitals,
+            "active_hospitals": active_hospitals,
+            "pending_kyc": pending_kyc,
+            "total_hospitals_with_doctors": total_hospitals_with_doctors,
+            "total_cities": total_cities,
+            "system_wide_kyc_completion": round(system_wide_kyc_completion, 2),
+            "hospitals_growth_rate": round(hospitals_growth_rate, 2),
+            "total_specialties": total_specialties,
+            "top_cities": list(top_cities),
+        }
+
+        serializer = AdminHospitalStatsSerializer(stats)
+        return Response(serializer.data)
+
+    def _get_basic_stats(self):
+        """Get basic statistics for other roles"""
+        all_hospitals = Hospital.objects.all()
+
+        stats = {
+            "total_hospitals": all_hospitals.count(),
+            "verified_hospitals": all_hospitals.filter(kyc_status="VERIFIED").count(),
+            "active_hospitals": all_hospitals.filter(is_active=True).count(),
+            "pending_kyc": all_hospitals.filter(kyc_status="PENDING").count(),
+        }
+
+        serializer = BasicHospitalStatsSerializer(stats)
+        return Response(serializer.data)
