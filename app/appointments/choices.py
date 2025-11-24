@@ -8,7 +8,6 @@ class AppointmentType(models.TextChoices):
     URGENT_CARE = "urgent_care", _("Urgent Care")
     MENTAL_HEALTH = "mental_health", _("Mental Health Session")
     GENERAL_CHECKUP = "general_checkup", _("General Checkup")
-    SPECIALIST = "specialist", _("Specialist Consultation")
 
 
 class AppointmentStatus(models.TextChoices):
