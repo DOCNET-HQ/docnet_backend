@@ -36,6 +36,10 @@ urlpatterns = [
     path("doctors/", include(("doctors.urls", "doctors"), namespace="doctors")),
     path("patients/", include(("patients.urls", "patients"), namespace="patients")),
     path("admins/", include(("admins.urls", "admins"), namespace="admins")),
+    path(
+        "dashboards/",
+        include(("dashboards.urls", "dashboards"), namespace="dashboards"),
+    ),
     path("", include(("appointments.urls", "appointments"), namespace="appointments")),
     path("chat/", include(("chat.urls", "chat"), namespace="chat")),
     path("reviews/", include(("reviews.urls", "reviews"), namespace="reviews")),
