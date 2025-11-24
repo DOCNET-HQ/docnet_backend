@@ -157,6 +157,8 @@ class PatientListSerializer(serializers.ModelSerializer):
             "phone_number",
             "website",
             "address",
+            "photo",
+            "gender",
             "city",
             "state",
             "country",
@@ -315,3 +317,36 @@ class PatientEmergencyContactCreateSerializer(serializers.ModelSerializer):
                 }
             )
         return data
+
+
+class PatientStatsSerializer(serializers.Serializer):
+    """Base serializer for patient statistics"""
+
+    total_patients = serializers.IntegerField()
+    active_patients = serializers.IntegerField()
+    pending_kyc = serializers.IntegerField()
+    verified_patients = serializers.IntegerField()
+
+
+class DoctorPatientStatsSerializer(PatientStatsSerializer):
+    """Doctor-specific patient statistics"""
+
+    patients_this_month = serializers.IntegerField()
+    new_patients_today = serializers.IntegerField()
+    appointment_conversion_rate = serializers.FloatField()
+
+
+class HospitalPatientStatsSerializer(PatientStatsSerializer):
+    """Hospital-specific patient statistics"""
+
+    patients_this_month = serializers.IntegerField()
+    patients_this_week = serializers.IntegerField()
+    kyc_completion_rate = serializers.FloatField()
+
+
+class AdminPatientStatsSerializer(PatientStatsSerializer):
+    """Admin-specific patient statistics"""
+
+    total_hospitals_with_patients = serializers.IntegerField()
+    system_wide_kyc_completion = serializers.FloatField()
+    patients_growth_rate = serializers.FloatField()
