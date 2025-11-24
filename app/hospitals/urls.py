@@ -1,7 +1,12 @@
-from django.urls import path
 from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 app_name = "hospitals"
+
+router = DefaultRouter()
+router.register(r"", views.HospitalStatsViewSet, basename="hospital-stats")
+
 
 urlpatterns = [
     path("", views.HospitalListView.as_view(), name="hospital-list"),
@@ -52,7 +57,8 @@ urlpatterns = [
         views.HospitalKYCRecordsForHospitalView.as_view(),
         name="hospital-kyc-records",
     ),
-    path("stats/", views.hospital_stats, name="hospital-stats"),
+    # Stats URL
+    path("", include(router.urls)),
     path(
         "bulk-update-status/",
         views.bulk_update_hospital_status,
