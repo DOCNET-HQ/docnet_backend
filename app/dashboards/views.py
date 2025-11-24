@@ -10,7 +10,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from dashboards.serializers import (
-    AdminDashboardSerializer, HospitalDashboardSerializer
+    AdminDashboardSerializer,
+    DoctorDashboardSerializer,
+    HospitalDashboardSerializer
 )
 
 User = get_user_model()
@@ -354,6 +356,183 @@ class HospitalDashboardView(APIView):
         """Format updated_at to time ago string"""
         now = timezone.now()
         diff = now - updated_at
+
+        if diff.days > 0:
+            return f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
+        elif diff.seconds // 3600 > 0:
+            hours = diff.seconds // 3600
+            return f"{hours} hour{'s' if hours > 1 else ''} ago"
+        else:
+            minutes = diff.seconds // 60
+            return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+
+
+class DoctorDashboardView(APIView):
+    def get(self, request):
+        doctor = request.user.profile
+
+        # Get all appointments for this doctor
+        doctor_appointments = Appointment.objects.filter(doctor=doctor)
+
+        # Total unique patients for this doctor
+        total_patients = Patient.objects.filter(
+            appointments__doctor=doctor
+        ).distinct().count()
+
+        # Total appointments for this doctor
+        total_appointments = doctor_appointments.count()
+
+        # Pending confirmation count (scheduled or rescheduled)
+        pending_confirmation_count = doctor_appointments.filter(
+            status__in=["scheduled", "rescheduled"]
+        ).count()
+
+        # Get recent appointments for this doctor
+        recent_appointments = doctor_appointments.select_related(
+            "patient"
+        ).order_by("-created_at")[:5]
+
+        # Get pending confirmation appointments (for the list)
+        pending_confirmation_appointments = doctor_appointments.filter(
+            status__in=["scheduled", "rescheduled"]
+        ).select_related("patient").order_by("-created_at")[:7]
+
+        # Format pending confirmation data
+        pending_confirmation_data = [
+            {
+                "id": appointment.id,
+                "patient_name": appointment.patient.name,
+                "appointment_type": self.get_appointment_type_display(appointment.appointment_type), # noqa
+                "scheduled_date": appointment.scheduled_start_time,
+                "status": appointment.status,
+                "submitted_at": self.format_time_ago(appointment.created_at),
+            }
+            for appointment in pending_confirmation_appointments
+        ]
+
+        # Generate monthly appointment trends for last 12 months
+        monthly_appointment_trends = self.get_monthly_appointment_trends(doctor)
+
+        # Generate appointment distribution data for this doctor
+        appointment_distribution_data = self.get_appointment_distribution_data(doctor)
+
+        data = {
+            "total_patients": total_patients,
+            "total_appointments": total_appointments,
+            "pending_confirmation_count": pending_confirmation_count,
+            "recent_appointments": recent_appointments,
+            "pending_confirmations": pending_confirmation_data,
+            "monthly_appointment_trends": monthly_appointment_trends,
+            "appointment_distribution": appointment_distribution_data,
+        }
+
+        serializer = DoctorDashboardSerializer(data)
+        return Response(serializer.data)
+
+    def get_monthly_appointment_trends(self, doctor):
+        monthly_data = []
+        current_date = timezone.now()
+
+        # Generate last 12 months including current month
+        for i in range(11, -1, -1):
+            # Calculate start and end of each month
+            target_date = current_date - timedelta(days=30 * i)
+            month_start = timezone.make_aware(
+                datetime(target_date.year, target_date.month, 1)
+            )
+
+            if target_date.month == 12:
+                next_month = timezone.make_aware(datetime(target_date.year + 1, 1, 1))
+            else:
+                next_month = timezone.make_aware(
+                    datetime(target_date.year, target_date.month + 1, 1)
+                )
+
+            # Get appointments for this doctor in this month
+            monthly_appointments = Appointment.objects.filter(
+                doctor=doctor,
+                scheduled_start_time__gte=month_start,
+                scheduled_start_time__lt=next_month,
+            )
+
+            # Count by status
+            scheduled_count = monthly_appointments.filter(status="scheduled").count()
+            completed_count = monthly_appointments.filter(status="completed").count()
+            cancelled_count = monthly_appointments.filter(status="cancelled").count()
+            confirmed_count = monthly_appointments.filter(status="confirmed").count()
+
+            patients_count = Patient.objects.filter(
+                appointments__in=monthly_appointments
+            ).distinct().count()
+
+            monthly_data.append(
+                {
+                    "month": f"{calendar.month_abbr[target_date.month]} {target_date.year}", # noqa
+                    "patients": patients_count,
+                    "scheduled": scheduled_count,
+                    "completed": completed_count,
+                    "cancelled": cancelled_count,
+                    "rescheduled": confirmed_count,
+                    "total": monthly_appointments.count(),
+                }
+            )
+
+        return monthly_data
+
+    def get_appointment_distribution_data(self, doctor):
+        # Map backend appointment types to frontend labels and colors
+        type_mapping = {
+            "consultation": {"label": "Consultation", "color": "#3b82f6"},
+            "follow_up": {"label": "Follow-up", "color": "#10b981"},
+            "general_checkup": {"label": "Checkup", "color": "#8b5cf6"},
+            "urgent_care": {"label": "Emergency", "color": "#f59e0b"},
+            "mental_health": {"label": "Therapy", "color": "#ef4444"},
+        }
+
+        # Get counts for each appointment type for this doctor
+        appointment_counts = (
+            Appointment.objects.filter(doctor=doctor)
+            .values("appointment_type")
+            .annotate(count=Count("id"))
+        )
+
+        distribution_data = []
+        for item in appointment_counts:
+            appointment_type = item["appointment_type"]
+            if appointment_type in type_mapping:
+                mapping = type_mapping[appointment_type]
+                distribution_data.append(
+                    {
+                        "type": mapping["label"],
+                        "count": item["count"],
+                        "color": mapping["color"],
+                    }
+                )
+
+        # Ensure all types are represented, even if count is 0
+        for appointment_type, mapping in type_mapping.items():
+            if not any(item["type"] == mapping["label"] for item in distribution_data):
+                distribution_data.append(
+                    {"type": mapping["label"], "count": 0, "color": mapping["color"]}
+                )
+
+        return sorted(distribution_data, key=lambda x: x["count"], reverse=True)
+
+    def get_appointment_type_display(self, appointment_type):
+        """Convert appointment type to display format"""
+        type_mapping = {
+            "consultation": "Consultation",
+            "follow_up": "Follow-up",
+            "general_checkup": "General Checkup",
+            "urgent_care": "Urgent Care",
+            "mental_health": "Mental Health",
+        }
+        return type_mapping.get(appointment_type, appointment_type)
+
+    def format_time_ago(self, timestamp):
+        """Format timestamp to time ago string"""
+        now = timezone.now()
+        diff = now - timestamp
 
         if diff.days > 0:
             return f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
