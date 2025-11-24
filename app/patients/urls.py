@@ -1,10 +1,15 @@
-from django.urls import path
 from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 app_name = "patients"
 
+
+router = DefaultRouter()
+router.register(r"", views.PatientStatsViewSet, basename="patient-stats")
+
+
 urlpatterns = [
-    # Patient CRUD URLs
     path("", views.PatientListView.as_view(), name="patient-list"),
     # path(
     #     'create/',
@@ -71,5 +76,5 @@ urlpatterns = [
         name="patient-emergency-contact-detail",
     ),
     # Stats URL
-    path("stats/", views.patient_stats, name="patient-stats"),
+    path("", include(router.urls)),
 ]
