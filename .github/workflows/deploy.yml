@@ -33,9 +33,7 @@ jobs:
 
     # Build and start Docker containers (fresh build)
     - name: Build and start Docker containers
-      run: |
-        docker-compose -f docker/docker-compose.yml build --no-cache app
-        docker-compose -f docker/docker-compose.yml up -d
+      run: make up
 
     # Run Django migrations
     - name: Run Django migrations
