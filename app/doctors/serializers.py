@@ -362,3 +362,32 @@ class DoctorKYCRecordUpdateSerializer(serializers.ModelSerializer):
         """
         validated_data["reviewed_by"] = self.context["request"].user
         return super().update(instance, validated_data)
+
+
+# doctors/serializers.py - Add these
+
+
+class DoctorStatsSerializer(serializers.Serializer):
+    """Base serializer for doctor statistics"""
+
+    total_doctors = serializers.IntegerField()
+    active_doctors = serializers.IntegerField()
+    verified_doctors = serializers.IntegerField()
+    pending_kyc = serializers.IntegerField()
+
+
+class HospitalDoctorStatsSerializer(DoctorStatsSerializer):
+    """Hospital-specific doctor statistics"""
+
+    doctors_this_month = serializers.IntegerField()
+    average_patients_per_doctor = serializers.FloatField()
+    top_specialties = serializers.ListField(child=serializers.DictField())
+
+
+class AdminDoctorStatsSerializer(DoctorStatsSerializer):
+    """Admin-specific doctor statistics"""
+
+    total_hospitals_with_doctors = serializers.IntegerField()
+    system_wide_kyc_completion = serializers.FloatField()
+    doctors_growth_rate = serializers.FloatField()
+    specialties_distribution = serializers.ListField(child=serializers.DictField())
