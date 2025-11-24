@@ -340,3 +340,33 @@ class HospitalKYCRecordUpdateSerializer(serializers.ModelSerializer):
         """
         validated_data["reviewed_by"] = self.context["request"].user
         return super().update(instance, validated_data)
+
+
+class HospitalStatsSerializer(serializers.Serializer):
+    total_doctors = serializers.IntegerField()
+    active_doctors = serializers.IntegerField()
+    hospital_rating = serializers.FloatField()
+    total_reviews = serializers.IntegerField()
+    doctors_this_month = serializers.IntegerField()
+    appointments_this_month = serializers.IntegerField()
+    top_specialties = serializers.ListField(child=serializers.DictField())
+
+
+class AdminHospitalStatsSerializer(serializers.Serializer):
+    total_hospitals = serializers.IntegerField()
+    verified_hospitals = serializers.IntegerField()
+    active_hospitals = serializers.IntegerField()
+    pending_kyc = serializers.IntegerField()
+    total_hospitals_with_doctors = serializers.IntegerField()
+    total_cities = serializers.IntegerField()
+    system_wide_kyc_completion = serializers.FloatField()
+    hospitals_growth_rate = serializers.FloatField()
+    total_specialties = serializers.IntegerField()
+    top_cities = serializers.ListField(child=serializers.DictField())
+
+
+class BasicHospitalStatsSerializer(serializers.Serializer):
+    total_hospitals = serializers.IntegerField()
+    verified_hospitals = serializers.IntegerField()
+    active_hospitals = serializers.IntegerField()
+    pending_kyc = serializers.IntegerField()
