@@ -20,6 +20,21 @@ class Patient(Profile):
         null=True,
     )
 
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old = type(self).objects.get(pk=self.pk)
+
+            changed = old.id_document != self.id_document
+
+            if changed:
+                self.is_pending_approval = True
+                # TODO: Send email to admin to verify
+                # TODO: Before they update the id details on the frontend, give them a warning saying message # noqa
+                # TODO: Send email to the doctor to notify them of the change
+                pass
+
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = "Patient"
         verbose_name_plural = "Patients"
@@ -40,6 +55,11 @@ class PatientKYCRecord(KYCRecord):
 
     def __str__(self):
         return f"KYC Record for {self.patient.name}"
+
+    def save(self, *args, **kwargs):
+        self.patient.is_pending_approval = False
+
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Patient KYC Record"
