@@ -44,6 +44,8 @@ urlpatterns = [
     path("chat/", include(("chat.urls", "chat"), namespace="chat")),
     path("reviews/", include(("reviews.urls", "reviews"), namespace="reviews")),
     path("meet/", include(("meet.urls", "meet"), namespace="meet")),
+    path("models/", include(("ai_models.urls", "ai_models"), namespace="ai_models")),
+
     # API DOCCUMENTATION
     path("api/docs/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path(
