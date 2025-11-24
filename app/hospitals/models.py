@@ -55,17 +55,24 @@ class Hospital(Profile):
     )
 
     def save(self, *args, **kwargs):
-        if not self._state.adding:
-            original = Hospital.objects.get(pk=self.pk)
-            if (
-                original.license_number != self.license_number
-                or original.license_expiry_date != self.license_expiry_date
-                or original.license_document != self.license_document
-            ):
+        if self.pk:
+            old = type(self).objects.get(pk=self.pk)
+
+            changed = (
+                old.id_document != self.id_document
+                or old.license_name != self.license_name
+                or old.license_issuance_authority != (self.license_issuance_authority)
+                or old.license_number != self.license_number
+                or old.license_issue_date != self.license_issue_date
+                or old.license_expiry_date != self.license_expiry_date
+                or old.license_document != self.license_document
+            )
+
+            if changed:
+                self.is_pending_approval = True
                 # TODO: Send email to admin to verify
-                # TODO: Before they update the license details on the frontend,
-                # give them a warning saying ---
-                # TODO: Send email to the hospital to notify them of the change
+                # TODO: Before they update the license details on the frontend, give them a warning saying message # noqa
+                # TODO: Send email to the doctor to notify them of the change
                 pass
 
         super().save(*args, **kwargs)
@@ -90,6 +97,11 @@ class HospitalKYCRecord(KYCRecord):
 
     def __str__(self):
         return f"KYC Record for {self.hospital.name}"
+
+    def save(self, *args, **kwargs):
+        self.hospital.is_pending_approval = False
+
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Hospital KYC Record"
