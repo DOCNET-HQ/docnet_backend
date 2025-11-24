@@ -47,9 +47,7 @@ class IsDoctor(BasePermission):
     message = "You must be associated with a doctor to perform this action."
 
     def has_permission(self, request, view):
-        return request.user.role == "doctor" and hasattr(
-            request.user, "doctor_profile"
-        )  # noqa
+        return request.user.role == "doctor" and hasattr(request.user, "doctor_profile")
 
 
 class IsPatient(BasePermission):
@@ -58,4 +56,4 @@ class IsPatient(BasePermission):
     def has_permission(self, request, view):
         return request.user.role == "patient" and hasattr(
             request.user, "patient_profile"
-        )  # noqa
+        )
