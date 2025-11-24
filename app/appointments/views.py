@@ -3,7 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+
 from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Count, Avg
 
 from .models import Appointment
 from .serializers import (
@@ -12,6 +15,10 @@ from .serializers import (
     AppointmentCreateSerializer,
     AppointmentUpdateSerializer,
     AppointmentCancelSerializer,
+    AppointmentStatsSerializer,
+    DoctorAppointmentStatsSerializer,
+    HospitalAppointmentStatsSerializer,
+    AdminAppointmentStatsSerializer,
 )
 from utils.permissions import IsDoctor
 from .filters import AppointmentFilter
@@ -70,7 +77,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(patient=user.patient_profile)
 
         elif hasattr(user, "hospital_profile"):
-            return queryset
+            queryset = queryset.filter(doctor__hospital=user.profile).distinct()
 
         elif hasattr(user, "admin_profile"):
             return queryset
@@ -298,3 +305,212 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             {"detail": "Technical issue reported successfully"},
             status=status.HTTP_200_OK,
         )
+
+
+class AppointmentStatsViewSet(viewsets.ViewSet):
+    """
+    ViewSet for appointment statistics
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=["get"], url_path="dashboard-stats")
+    def dashboard_stats(self, request):
+        """Get dashboard statistics based on user role"""
+        user = request.user
+
+        if hasattr(user, "doctor_profile"):
+            return self._get_doctor_stats(user.doctor_profile)
+        elif hasattr(user, "hospital_profile"):
+            return self._get_hospital_stats(user.hospital_profile)
+        elif hasattr(user, "admin_profile") or user.is_staff:
+            return self._get_admin_stats()
+        else:
+            # For patients or other roles, return basic stats
+            return self._get_basic_stats(user)
+
+    def _get_doctor_stats(self, doctor):
+        """Get statistics for doctor dashboard"""
+        now = timezone.now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_ago = now - timedelta(days=7)
+        month_ago = now - timedelta(days=30)
+
+        # Base queryset for this doctor
+        base_qs = Appointment.objects.filter(doctor=doctor)
+
+        # Calculate metrics
+        total_appointments = base_qs.count()
+
+        today_appointments = base_qs.filter(
+            scheduled_start_time__date=today_start.date(),
+            status__in=["scheduled", "confirmed"],
+        ).count()
+
+        upcoming_appointments = base_qs.filter(
+            scheduled_start_time__gt=now, status__in=["scheduled", "confirmed"]
+        ).count()
+
+        pending_confirmation = base_qs.filter(status="scheduled").count()
+
+        completed_this_week = base_qs.filter(
+            status="completed", scheduled_start_time__gte=week_ago
+        ).count()
+
+        # Cancellation rate (cancelled vs total in last 30 days)
+        recent_appointments = base_qs.filter(scheduled_start_time__gte=month_ago)
+        total_recent = recent_appointments.count()
+        cancelled_recent = recent_appointments.filter(status="cancelled").count()
+        cancellation_rate = (
+            (cancelled_recent / total_recent * 100) if total_recent > 0 else 0
+        )
+
+        # Average daily appointments (last 30 days)
+        daily_avg = (
+            base_qs.filter(scheduled_start_time__gte=month_ago)
+            .extra({"date": "date(scheduled_start_time)"})
+            .values("date")
+            .annotate(count=Count("id"))
+            .aggregate(avg=Avg("count"))["avg"]
+            or 0
+        )
+
+        stats = {
+            "total_appointments": total_appointments,
+            "today_appointments": today_appointments,
+            "upcoming_appointments": upcoming_appointments,
+            "pending_confirmation": pending_confirmation,
+            "completed_this_week": completed_this_week,
+            "cancellation_rate": round(cancellation_rate, 2),
+            "average_daily_appointments": round(daily_avg, 1),
+        }
+
+        serializer = DoctorAppointmentStatsSerializer(stats)
+        return Response(serializer.data)
+
+    def _get_hospital_stats(self, hospital):
+        """Get statistics for hospital dashboard"""
+        now = timezone.now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        month_ago = now - timedelta(days=30)
+
+        # Get doctors belonging to this hospital
+        hospital_doctors = hospital.doctors.all()
+
+        # Base queryset for this hospital's doctors
+        base_qs = Appointment.objects.filter(doctor__in=hospital_doctors)
+
+        # Calculate metrics
+        total_appointments = base_qs.count()
+
+        today_appointments = base_qs.filter(
+            scheduled_start_time__date=today_start.date(),
+            status__in=["scheduled", "confirmed"],
+        ).count()
+
+        upcoming_appointments = base_qs.filter(
+            scheduled_start_time__gt=now, status__in=["scheduled", "confirmed"]
+        ).count()
+
+        pending_confirmation = base_qs.filter(status="scheduled").count()
+
+        total_doctors_with_appointments = base_qs.values("doctor").distinct().count()
+
+        completed_this_month = base_qs.filter(
+            status="completed", scheduled_start_time__gte=month_ago
+        ).count()
+
+        stats = {
+            "total_appointments": total_appointments,
+            "today_appointments": today_appointments,
+            "upcoming_appointments": upcoming_appointments,
+            "pending_confirmation": pending_confirmation,
+            "total_doctors_with_appointments": total_doctors_with_appointments,
+            "completed_this_month": completed_this_month,
+            # 'revenue_this_month': 0  #
+        }
+
+        serializer = HospitalAppointmentStatsSerializer(stats)
+        return Response(serializer.data)
+
+    def _get_admin_stats(self):
+        """Get statistics for admin dashboard"""
+        now = timezone.now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        month_ago = now - timedelta(days=30)
+
+        # Base queryset for all appointments
+        base_qs = Appointment.objects.all()
+
+        # Calculate metrics
+        total_appointments = base_qs.count()
+
+        today_appointments = base_qs.filter(
+            scheduled_start_time__date=today_start.date(),
+            status__in=["scheduled", "confirmed"],
+        ).count()
+
+        upcoming_appointments = base_qs.filter(
+            scheduled_start_time__gt=now, status__in=["scheduled", "confirmed"]
+        ).count()
+
+        pending_confirmation = base_qs.filter(status="scheduled").count()
+
+        # System-wide metrics
+        total_hospitals_with_appointments = (
+            base_qs.filter(doctor__hospital__isnull=False)
+            .values("doctor__hospital")
+            .distinct()
+            .count()
+        )
+
+        system_wide_completed = base_qs.filter(
+            status="completed", scheduled_start_time__gte=month_ago
+        ).count()
+
+        # System-wide cancellation rate
+        recent_appointments = base_qs.filter(scheduled_start_time__gte=month_ago)
+        total_recent = recent_appointments.count()
+        cancelled_recent = recent_appointments.filter(status="cancelled").count()
+        system_wide_cancellation_rate = (
+            (cancelled_recent / total_recent * 100) if total_recent > 0 else 0
+        )
+
+        stats = {
+            "total_appointments": total_appointments,
+            "today_appointments": today_appointments,
+            "upcoming_appointments": upcoming_appointments,
+            "pending_confirmation": pending_confirmation,
+            "total_hospitals_with_appointments": total_hospitals_with_appointments,
+            "system_wide_completed": system_wide_completed,
+            "system_wide_cancellation_rate": round(system_wide_cancellation_rate, 2),
+        }
+
+        serializer = AdminAppointmentStatsSerializer(stats)
+        return Response(serializer.data)
+
+    def _get_basic_stats(self, user):
+        """Get basic statistics for patients or other roles"""
+        now = timezone.now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # For patients, show their appointments
+        if hasattr(user, "patient_profile"):
+            base_qs = Appointment.objects.filter(patient=user.patient_profile)
+        else:
+            base_qs = Appointment.objects.none()
+
+        stats = {
+            "total_appointments": base_qs.count(),
+            "today_appointments": base_qs.filter(
+                scheduled_start_time__date=today_start.date(),
+                status__in=["scheduled", "confirmed"],
+            ).count(),
+            "upcoming_appointments": base_qs.filter(
+                scheduled_start_time__gt=now, status__in=["scheduled", "confirmed"]
+            ).count(),
+            "pending_confirmation": base_qs.filter(status="scheduled").count(),
+        }
+
+        serializer = AppointmentStatsSerializer(stats)
+        return Response(serializer.data)
