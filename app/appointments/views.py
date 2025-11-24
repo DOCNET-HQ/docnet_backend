@@ -198,7 +198,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         """Confirm an appointment"""
         appointment = self.get_object()
 
-        if appointment.status != AppointmentStatus.SCHEDULED:
+        if appointment.status not in [
+            AppointmentStatus.SCHEDULED,
+            AppointmentStatus.RESCHEDULED,
+        ]:
             return Response(
                 {"detail": "Only scheduled appointments can be confirmed"},
                 status=status.HTTP_400_BAD_REQUEST,
