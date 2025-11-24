@@ -71,6 +71,7 @@ dev: ## Start all containers in dev mode
 .PHONY: up
 up: ## Start all containers in detached mode
 	@echo "Starting containers..."
+	docker-compose -f $(DOCKER_COMPOSE_FILE) --env-file $(ENV_FILE) build --no-cache app
 	docker-compose -f $(DOCKER_COMPOSE_FILE) --env-file $(ENV_FILE) up -d
 
 .PHONY: down
