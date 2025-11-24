@@ -28,12 +28,10 @@ class ReviewAPITestCase(TestCase):
             email="other@example.com", password="testpass123"
         )
         self.doctor = Doctor.objects.create(
-            user=self.user2,
-            name="Dr. Test Doctor", specialty="Cardiology"
+            user=self.user2, name="Dr. Test Doctor", specialty="Cardiology"
         )
         self.hospital = Hospital.objects.create(
-            user=self.user3,
-            name="Test Hospital", address="123 Test St"
+            user=self.user3, name="Test Hospital", address="123 Test St"
         )
 
         # Create some test reviews
@@ -67,16 +65,12 @@ class ReviewAPITestCase(TestCase):
 class HasReviewedAPITests(ReviewAPITestCase):
     def test_has_reviewed_doctor_authenticated(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(
-            f"/reviews/doctors/{self.doctor.id}/has-reviewed/"
-        )
+        response = self.client.get(f"/reviews/doctors/{self.doctor.id}/has-reviewed/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data["has_reviewed"])
 
     def test_has_reviewed_doctor_not_authenticated(self):
-        response = self.client.get(
-            f"/reviews/doctors/{self.doctor.id}/has-reviewed/"
-        )
+        response = self.client.get(f"/reviews/doctors/{self.doctor.id}/has-reviewed/")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_has_reviewed_hospital_authenticated(self):
@@ -97,25 +91,18 @@ class DoctorReviewAPITests(ReviewAPITestCase):
         self.assertEqual(len(response.data["results"]), 2)
 
         # Auth user's review should come first
-        self.assertTrue(
-            response.data["results"][0]["is_auth_user"]
-        )
-        self.assertFalse(
-            response.data["results"][1]["is_auth_user"]
-        )
+        self.assertTrue(response.data["results"][0]["is_auth_user"])
+        self.assertFalse(response.data["results"][1]["is_auth_user"])
 
     def test_create_doctor_review_authenticated(self):
         self.client.force_authenticate(user=self.other_user)
         new_doctor = Doctor.objects.create(
-            user=self.user4,
-            name="Dr. New", specialty="Dermatology"
+            user=self.user4, name="Dr. New", specialty="Dermatology"
         )
 
         data = {"doctor": new_doctor.id, "rating": 5, "text": "Amazing doctor!"}
 
-        response = self.client.post(
-            f"/reviews/doctors/{new_doctor.id}/", data
-        )
+        response = self.client.post(f"/reviews/doctors/{new_doctor.id}/", data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(DoctorReview.objects.count(), 3)
 
@@ -124,29 +111,21 @@ class DoctorReviewAPITests(ReviewAPITestCase):
 
         data = {"doctor": self.doctor.id, "rating": 3, "text": "Another review"}
 
-        response = self.client.post(
-            f"/reviews/doctors/{self.doctor.id}/", data
-        )
+        response = self.client.post(f"/reviews/doctors/{self.doctor.id}/", data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class HospitalReviewAPITests(ReviewAPITestCase):
     def test_list_hospital_reviews_authenticated(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(
-            f"/reviews/hospitals/{self.hospital.id}/"
-        )
+        response = self.client.get(f"/reviews/hospitals/{self.hospital.id}/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 2)
 
         # Auth user's review should come first
-        self.assertTrue(
-            response.data["results"][0]["is_auth_user"]
-        )
-        self.assertFalse(
-            response.data["results"][1]["is_auth_user"]
-        )
+        self.assertTrue(response.data["results"][0]["is_auth_user"])
+        self.assertFalse(response.data["results"][1]["is_auth_user"])
 
     def test_update_doctor_review_owner(self):
         self.client.force_authenticate(user=self.user)
@@ -166,9 +145,7 @@ class HospitalReviewAPITests(ReviewAPITestCase):
 class ReviewDetailAPITests(ReviewAPITestCase):
     def test_retrieve_doctor_review(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(
-            f"/reviews/doctor-reviews/{self.doctor_review.id}/"
-        )
+        response = self.client.get(f"/reviews/doctor-reviews/{self.doctor_review.id}/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["id"], self.doctor_review.id)
