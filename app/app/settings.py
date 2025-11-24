@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "reviews",
     "admins",
     "meet",
+    "ai_models",
     "dashboards",
 ]
 
