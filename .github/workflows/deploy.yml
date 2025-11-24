@@ -1,31 +1,48 @@
+name: App CD Pipeline
+
+# Trigger after your CI workflow completes
+on:
+  workflow_run:
+    workflows: ["App CI Pipeline"]
+    types:
+      - completed
+
 jobs:
   deploy:
+    # Only run if the CI workflow succeeded AND it was on main
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: self-hosted
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
+    # Apply working-directory to all run steps
     defaults:
       run:
         working-directory: /home/ubuntu/actions-runner/_work/docnet_backend/docnet_backend
 
     steps:
+    # Checkout latest code (always in the correct folder)
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
+    # Write .env file from GitHub Secrets
     - name: Set up environment
       run: |
         echo "${{ secrets.ENV_FILE }}" > .env
         chmod 600 .env
 
+    # Build and start Docker containers (fresh build)
     - name: Build and start Docker containers
-      run: make up
+      run: docker compose -f docker/docker-compose.yml build --no-cache app && docker compose -f docker/docker-compose.yml up -d
 
+    # Run Django migrations
     - name: Run Django migrations
       run: make docker-migrate
 
+    # Restart any additional services your Makefile handles
     - name: Restart services
       run: make restart
 
+    # Restart Nginx
     - name: Restart Nginx
       run: sudo service nginx restart
