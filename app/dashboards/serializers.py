@@ -73,6 +73,15 @@ class HospitalMonthlyGrowthSerializer(serializers.Serializer):
     appointments = serializers.IntegerField()
 
 
+class DoctorMonthlyGrowthSerializer(serializers.Serializer):
+    month = serializers.CharField()
+    scheduled = serializers.IntegerField()
+    completed = serializers.IntegerField()
+    cancelled = serializers.IntegerField()
+    rescheduled = serializers.IntegerField()
+    total = serializers.IntegerField()
+
+
 class HospitalDashboardSerializer(serializers.Serializer):
     total_patients = serializers.IntegerField()
     active_doctors = serializers.IntegerField()
@@ -87,6 +96,28 @@ class HospitalDashboardSerializer(serializers.Serializer):
     )
 
     monthly_growth = HospitalMonthlyGrowthSerializer(
+        many=True, required=False, read_only=True
+    )
+    appointment_distribution = AppointmentTypeDistributionSerializer(
+        many=True, required=False, read_only=True
+    )
+
+
+class PendingApprovalsSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True, required=False)
+    name = serializers.CharField(read_only=True, required=False)
+    submitted_at = serializers.CharField(read_only=True, required=False)
+
+
+class DoctorDashboardSerializer(serializers.Serializer):
+    total_patients = serializers.IntegerField()
+    total_appointments = serializers.IntegerField()
+    pending_confirmation_count = serializers.IntegerField()
+    recent_appointments = RecentAppointmentsSerializer(
+        many=True, required=False, read_only=True
+    )
+    pending_confirmations = serializers.ListField()
+    monthly_appointment_trends = DoctorMonthlyGrowthSerializer(
         many=True, required=False, read_only=True
     )
     appointment_distribution = AppointmentTypeDistributionSerializer(
