@@ -20,12 +20,10 @@ class ReviewBaseModelTest(TestCase):
             email="hospital@example.com", password="testpass123"
         )
         self.doctor = Doctor.objects.create(
-            user=self.user2,
-            name="Dr. Test Doctor", specialty="Cardiology"
+            user=self.user2, name="Dr. Test Doctor", specialty="Cardiology"
         )
         self.hospital = Hospital.objects.create(
-            user=self.user3,
-            name="Test Hospital", address="123 Test St"
+            user=self.user3, name="Test Hospital", address="123 Test St"
         )
 
     def test_create_doctor_review(self):
