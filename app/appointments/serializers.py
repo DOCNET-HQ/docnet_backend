@@ -122,7 +122,7 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
             if not patient:
                 raise serializers.ValidationError(
                     {
-                        "patient": "Patient ID is required when a doctor is creating appointment" # noqa
+                        "patient": "Patient ID is required when a doctor is creating appointment"  # noqa
                     }
                 )
 
@@ -133,7 +133,7 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
             if not doctor:
                 raise serializers.ValidationError(
                     {
-                        "doctor": "Doctor ID is required when a patient is creating appointment" # noqa
+                        "doctor": "Doctor ID is required when a patient is creating appointment"  # noqa
                     }  # noqa
                 )
 
@@ -249,3 +249,38 @@ class AppointmentCancelSerializer(serializers.Serializer):
     #     choices=CancelledBy.choices,
     #     required=True
     # )
+
+
+class AppointmentStatsSerializer(serializers.Serializer):
+    """Base serializer for appointment statistics"""
+
+    total_appointments = serializers.IntegerField()
+    today_appointments = serializers.IntegerField()
+    upcoming_appointments = serializers.IntegerField()
+    pending_confirmation = serializers.IntegerField()
+
+
+class DoctorAppointmentStatsSerializer(AppointmentStatsSerializer):
+    """Doctor-specific appointment statistics"""
+
+    completed_this_week = serializers.IntegerField()
+    cancellation_rate = serializers.FloatField()
+    average_daily_appointments = serializers.FloatField()
+
+
+class HospitalAppointmentStatsSerializer(AppointmentStatsSerializer):
+    """Hospital-specific appointment statistics"""
+
+    total_doctors_with_appointments = serializers.IntegerField()
+    completed_this_month = serializers.IntegerField()
+    revenue_this_month = serializers.DecimalField(
+        max_digits=10, decimal_places=2, required=False
+    )
+
+
+class AdminAppointmentStatsSerializer(AppointmentStatsSerializer):
+    """Admin-specific appointment statistics"""
+
+    total_hospitals_with_appointments = serializers.IntegerField()
+    system_wide_completed = serializers.IntegerField()
+    system_wide_cancellation_rate = serializers.FloatField()
